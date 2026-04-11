@@ -1,0 +1,47 @@
+\begin{question}{Properties of Finite-state Language Models}
+
+\begin{subquestion}
+
+\subsubsection*{Approach}
+
+We define the duplicated automaton $\mathcal{A}_{dup} = (\Sigma, Q_{dup}, \delta_{dup}, \lambda_{dup}, \rho_{dup})$ as follows:
+
+\begin{description}
+
+    \item[$\Sigma$:] The alphabet remains unchanged. The duplicated automaton reads the exact same symbols as the original one.
+
+    \item[$Q_{dup}$:] The state space is doubled to create two parallel layers. We define this mathematically as $Q_{dup} = Q \times \{1, 2\}$, where $1$ and $2$ represent the layer numbers.
+
+    \item[$\delta_{dup}$:] The transitions are rebuilt to allow moving entirely within Layer 1, moving entirely within Layer 2, and taking a one-way ``bridge'' from Layer 1 to Layer 2. No transitions are created that go from Layer 2 back to Layer 1.
+
+    \item[$\lambda_{dup}$:] We force all paths to begin in the first layer. We do this by keeping the original initial weights for Layer 1 states and setting the initial weights for all Layer 2 states to $0$.
+
+    \item[$\rho_{dup}$:] We force all paths to finish in the second layer. We do this by keeping the original final weights for Layer 2 states and setting the final weights for all Layer 1 states to $0$.
+
+\end{description}
+
+To find the mean string length under $p_{LM}$, we simply execute the \texttt{allsum} algorithm from the notes on $\mathcal{A}_{dup}$.
+
+\subsubsection*{Intuition}
+
+In our two-layer automaton, any path $\pi$ from the original automaton must cross the one-way bridge to Layer 2 exactly once. Because the path has $|\pi|$ steps, there are $|\pi|$ different opportunities to make this jump. 
+
+Therefore, the \texttt{allsum} algorithm discovers $|\pi|$ distinct routes for the original path. By adding up all valid routes, the algorithm naturally adds the path's probability to the total sum $|\pi|$ times, seamlessly computing $\text{Probability} \times \text{Length}$ to find the mean.
+
+\end{subquestion}
+
+\begin{subquestion}
+
+The duplicated automaton $\mathcal{A}_{dup}$ has twice as many states as the original automaton. If we plug this new size into the runtime for the algorithm from the notes, we get:
+$$ \mathcal{O}((2|Q|)^3) = \mathcal{O}(8|Q|^3) $$
+
+We can drop the constant multiplier, because it doesn't change the fundamental growth rate of the algorithm. This leaves us with our final time complexity:
+$$ \mathcal{O}(|Q|^3) $$
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\end{subquestion}
+
+\end{question}

@@ -1,0 +1,164 @@
+\begin{question}{Representation Surgery}
+
+\begin{subquestion}
+No. Definition 2 only restricts affine predictors. A non-linear classifier may still achieve a loss lower than the trivially attainable loss by capturing dependencies that a linear model cannot.
+\end{subquestion}
+
+\begin{subquestion}
+
+\subsubsection*{Question 1(b): Proof of Linear Guardedness}
+
+Using Jensen's Inequality:
+\[ \mathbb{E}[\mathcal{L}(f(\X), i) \mid Z=i] \geq \mathcal{L}(\mathbb{E}[f(\X) \mid Z=i], i) \]
+
+Introduce affine formula:
+\begin{align*}
+\mathbb{E}[\mathcal{L}(f(\X), i) \mid Z=i] &\geq \mathcal{L}(\mathbb{E}[\mathbf{Ax} + \mathbf{b} \mid Z=i], i) \\
+&\geq \mathcal{L}(\mathbf{A}\mathbb{E}[\X \mid Z=i] + \mathbf{b} \mid Z=i], i) \\
+\mathbb{E}[\mathcal{L}(f(\X)), Z] &\geq \mathcal{L}(\mathbf{b'}) \\
+&\geq L_{\tau}
+\end{align*}
+
+According to Definition 2, this is the exact requirement for linear guardedness.
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\begin{align*}
+\mathcal{L}(y, Z=i) &= -\ln \left( \frac{\exp(y_i)}{\sum_{j=1}^{k} \exp(y_j)} \right) \\
+&= -y_i + \ln \left( \sum_{j=1}^{k} \exp(y_j) \right)
+\end{align*}
+
+Case A: When $i = j$ (We are changing the true class score)
+
+\begin{align*}
+\frac{\partial \mathcal{L}(y, Z=i)}{\partial y_i} &= \frac{\partial}{\partial y_i} \left[ -y_i + \ln\left(\sum_{k=1}^k \exp(y_k)\right) \right] \\
+&= -1 + \frac{1}{\sum_{k=1}^k \exp(y_k)} \cdot \exp(y_i) \\
+&= \frac{\exp(y_i)}{\sum_{k=1}^k \exp(y_k)} - 1 \\
+&= \text{softmax}(y)_i - 1
+\end{align*}
+
+Case B: When $i \neq j$ (We are changing a wrong class score)
+
+\begin{align*}
+\frac{\partial \mathcal{L}(y, Z=j)}{\partial y_i} &= \frac{\partial}{\partial y_i} \left[ -y_j + \ln\left(\sum_{k=1}^k \exp(y_k)\right) \right] \\
+&= 0 + \frac{1}{\sum_{k=1}^k \exp(y_k)} \cdot \exp(y_i) \\
+&= \text{softmax}(y)_i
+\end{align*}
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\subsubsection*{\SigXZ = \mathbf{0} \implies \mathbb{E}[\X|Z=i] = \mathbb{E}[\X]}
+
+\subsubsection*{Reverse Direction: $\Sigma_{X,\tilde{Z}} = \mathbf{0} \implies \mathbb{E}[X|Z=i] = \mathbb{E}[X]$}
+
+Assume the cross-covariance matrix is the zero matrix: $\Sigma_{X,\tilde{Z}} = \mathbf{0}$. 
+Using the definition $\Sigma_{X,\tilde{Z}} = \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top]$, we have:
+\[ \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top] = \mathbf{0} \]
+
+We examine the $i$-th column of this matrix. Multiplying the matrix by the $i$-th basis vector $\mathbf{e}_i$ isolates the $i$-th column:
+\[ \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top] \mathbf{e}_i = \mathbf{0} \]
+
+Since $\tilde{Z}^\top \mathbf{e}_i$ is an indicator variable that equals $1$ if $Z=i$ and $0$ otherwise, the expectation becomes:
+\[ \mathbb{E}[(X - \mathbb{E}[X]) \cdot \mathbb{I}(Z=i)] = \mathbf{0} \]
+
+Using the definition of conditional expectation, this is equivalent to:
+\[ \mathbb{P}(Z=i) \mathbb{E}[X - \mathbb{E}[X] \mid Z=i] = \mathbf{0} \]
+
+Given the assumption that $\mathbb{P}(Z=i) > 0$, we can divide by the probability:
+\[ \mathbb{E}[X \mid Z=i] - \mathbb{E}[X] = \mathbf{0} \]
+\[ \mathbb{E}[X \mid Z=i] = \mathbb{E}[X] \]
+
+This proves that if the cross-covariance is zero, the class-conditional means must equal the global mean for all classes $i$.
+
+\subsubsection*{\mathbb{E}[\X|Z=i] = \mathbb{E}[\X] \implies \SigXZ = \mathbf{0}}
+
+\begin{align*}
+\text{Col}_i(\Sigma_{X, \tilde{Z}}) &= (\mathbb{E}[X \mid Z=i] - \mathbb{E}[X]) \mathbb{P}(Z=i) \\
+&= 0
+\end{align*}
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\subsubsection*{Direction $(\implies):$ $r(\mathbf{X})$ linearly guards $Z \implies \mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$}
+
+Assume that the representation $r(\mathbf{X}) = \mathbf{P}\mathbf{X} + \mathbf{b}$ linearly guards the concept $Z$. By definition of linear guarding, the cross-covariance between the transformed representation and the target concept must vanish:
+$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{0}$$
+
+Substituting the expression for $r(\mathbf{X})$, we have:
+$$Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z}) = \mathbf{0}$$
+
+We now apply the \textbf{linearity of covariance}. Since covariance is invariant to translations by a constant vector $\mathbf{b}$, and linear with respect to the matrix $\mathbf{P}$, we can simplify the expression as follows:
+$$Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z}) = Cov(\mathbf{P}\mathbf{X}, \tilde{Z}) = \mathbf{P} Cov(\mathbf{X}, \tilde{Z})$$
+
+Substituting the definition of the original cross-covariance $\boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = Cov(\mathbf{X}, \tilde{Z})$, we arrive at:
+$$\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$$
+
+This result confirms that if $r(\mathbf{X})$ is guarded, the matrix $\mathbf{P}$ must map the columns of the covariance matrix to the zero vector.
+
+\subsubsection*{Direction $(\impliedby):$ $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0} \implies r(\mathbf{X})$ linearly guards $Z$}
+
+Now, we assume that the algebraic condition $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$ holds. We must show that this condition is sufficient to guarantee that the representation $r(\mathbf{X}) = \mathbf{P}\mathbf{X} + \mathbf{b}$ linearly guards $Z$.
+
+We examine the cross-covariance of the transformed representation:
+$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z})$$
+
+Using the \textbf{linearity of covariance}, we apply translation invariance to the constant vector $\mathbf{b}$ and homogeneity to the matrix $\mathbf{P}$:
+$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{P} Cov(\mathbf{X}, \tilde{Z})$$
+
+Substituting the definition of the original cross-covariance matrix $\boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}}$:
+$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}}$$
+
+By our initial assumption, $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$. Therefore:
+$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{0}$$
+
+Since the cross-covariance between $r(\mathbf{X})$ and $\tilde{Z}$ is the zero matrix, it follows from the established equivalence between zero covariance and linear guarding that $r(\mathbf{X})$ linearly guards $Z$.
+\end{subquestion}
+
+\begin{subquestion}
+
+\subsubsection*{(i)}
+
+\begin{align*}
+D(\mathbf{P}, \mathbf{b}) &= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X} + \mathbf{b}|^2] \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2 + |\mathbf{b}|^2 + 2(\mathbf{P}\mathbf{X} - \mathbf{X} | \mathbf{b})] \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2\mathbb{E}[(\mathbf{P}\mathbf{X} - \mathbf{X} | \mathbf{b})] \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2(\mathbb{E}[(\mathbf{P} - \mathbf{I})\mathbf{X}] | \mathbf{b}) \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2((\mathbf{P} - \mathbf{I})\mathbb{E}[\mathbf{X}] | \mathbf{b}) \\
+\text{Since } \mathbb{E}[\mathbf{X}] &= \mathbf{0}: \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2(\mathbf{0} | \mathbf{b}) \\
+&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2
+\end{align*}
+
+\subsubsection*{(ii)}
+
+Since $\mathbf{b}$ only adds to the distance the optional value is $\mathbf{0}$.
+
+\end{subquestion}
+
+\begin{subquestion}
+\subsubsection*{Proof that $\Pstar$ satisfies Eq. (7)}
+\begin{align*}
+           \Pstar &= \I - \SigXZ \SigXZ^{+} \\
+    \Pstar \SigXZ &= (\I - \SigXZ \SigXZ^{+}) \SigXZ \\
+                  &= \I \SigXZ - (\SigXZ \SigXZ^{+} \SigXZ) \\
+                  &= \SigXZ - \SigXZ \justification{$A A^+ A = A$} \\
+    \Pstar \SigXZ &= \mathbf{0}
+\end{align*}
+\subsubsection*{Proof that $\Pstar$ minimizes Eq. (8)}
+\end{subquestion}
+
+\begin{subquestion}
+
+\end{subquestion}
+
+\end{question}
