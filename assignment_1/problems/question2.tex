@@ -8,15 +8,26 @@ We define the duplicated automaton $\mathcal{A}_{dup} = (\Sigma, Q_{dup}, \delta
 
 \begin{description}
 
-    \item[$\Sigma$:] The alphabet remains unchanged. The duplicated automaton reads the exact same symbols as the original one.
+    \item[$\Sigma$:]
+    The alphabet remains unchanged. The duplicated automaton reads the exact same symbols as the original one.
 
-    \item[$Q_{dup}$:] The state space is doubled to create two parallel layers. We define this mathematically as $Q_{dup} = Q \times \{1, 2\}$, where $1$ and $2$ represent the layer numbers.
+    \item[$Q_{dup}$:]
+    The state space is doubled to create two parallel layers. We define this mathematically as $Q_{dup} = Q \times \{1, 2\}$, where $1$ and $2$ represent the layer numbers.
 
-    \item[$\delta_{dup}$:] The transitions are rebuilt to allow moving entirely within Layer 1, moving entirely within Layer 2, and taking a one-way ``bridge'' from Layer 1 to Layer 2. No transitions are created that go from Layer 2 back to Layer 1.
+    \item[$\delta_{dup}$:]
+    For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, we construct the transitions in $\mathcal{A}_{dup}$ as follows:
 
-    \item[$\lambda_{dup}$:] We force all paths to begin in the first layer. We do this by keeping the original initial weights for Layer 1 states and setting the initial weights for all Layer 2 states to $0$.
+    \begin{itemize}
+        \item \textbf{Layer 1 Traversal:} A transition $(q, 1) \xrightarrow{a, w} (q', 1)$.
+        \item \textbf{Layer 2 Traversal:} A transition $(q, 2) \xrightarrow{a, w} (q', 2)$.
+        \item \textbf{The One-Way Bridge:} A transition $(q, 1) \xrightarrow{a, w} (q', 2)$.
+    \end{itemize}
 
-    \item[$\rho_{dup}$:] We force all paths to finish in the second layer. We do this by keeping the original final weights for Layer 2 states and setting the final weights for all Layer 1 states to $0$.
+    \item[$\lambda_{dup}$:]
+    We force all paths to begin in the first layer. We do this by keeping the original initial weights for Layer 1 states and setting the initial weights for all Layer 2 states to $0$.
+
+    \item[$\rho_{dup}$:]
+    We force all paths to finish in the second layer. We do this by keeping the original final weights for Layer 2 states and setting the final weights for all Layer 1 states to $0$.
 
 \end{description}
 
@@ -28,15 +39,62 @@ In our two-layer automaton, any path $\pi$ from the original automaton must cros
 
 Therefore, the \texttt{allsum} algorithm discovers $|\pi|$ distinct routes for the original path. By adding up all valid routes, the algorithm naturally adds the path's probability to the total sum $|\pi|$ times, seamlessly computing $\text{Probability} \times \text{Length}$ to find the mean.
 
-\end{subquestion}
-
-\begin{subquestion}
+\subsubsection*{Runtime}
 
 The duplicated automaton $\mathcal{A}_{dup}$ has twice as many states as the original automaton. If we plug this new size into the runtime for the algorithm from the notes, we get:
 $$ \mathcal{O}((2|Q|)^3) = \mathcal{O}(8|Q|^3) $$
 
 We can drop the constant multiplier, because it doesn't change the fundamental growth rate of the algorithm. This leaves us with our final time complexity:
 $$ \mathcal{O}(|Q|^3) $$
+
+\end{subquestion}
+
+\begin{subquestion}
+
+\subsubsection*{Approach}
+
+To compute the variance, we use the identity $\text{Var}(X) = E[X^2] - E[X]^2$. Having already determined $E[X]$ via the duplicated automaton, we now construct a three-layered automaton $\mathcal{A}_{tri} = (\Sigma, Q_{tri}, \delta_{tri}, \lambda_{tri}, \rho_{tri})$ to find $E[X^2]$.
+
+The state space is defined as $Q_{tri} = Q \times \{1, 2, 3\}$.
+
+For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, the weights in $\mathcal{A}_{tri}$ are assigned as follows:
+
+\subsubsection*{Transitions of $\mathcal{A}_{tri}$}
+
+For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, we define the following transitions in $\mathcal{A}_{tri}$:
+
+\begin{itemize}
+    \item $(q, i) \xrightarrow{a, w} (q', i)$ for $i \in \{1, 2, 3\}$
+    \item $(q, 1) \xrightarrow{a, w} (q', 3)$
+    \item $(q, 1) \xrightarrow{a, 2w} (q', 2)$
+    \item $(q, 2) \xrightarrow{a, w} (q', 3)$
+\end{itemize}
+
+By running \texttt{allsum} on $\mathcal{A}_{tri}$, we obtain $E[X^2]$.
+
+\subsubsection*{Intuition}
+
+The second moment $E[X^2]$ is the expectation of the squared path length, $\sum p(\pi) \cdot |\pi|^2$. By expanding the square as a double summation, $|\pi|^2 = \sum_{i} \sum_{j} 1$, we see that we must account for every possible pair of steps in a path. 
+
+The three layers facilitate this by acting as a "selection" mechanism:
+\begin{enumerate}
+    \item The path starts in Layer 1.
+    \item It moves to Layer 2 when the first step of a pair is "selected."
+    \item It moves to Layer 3 when the second step is "selected."
+\end{enumerate}
+The double-step bridge ensures that steps can be paired with themselves.
+
+\subsubsection*{Weighting Logic}
+
+By using these weights, the \texttt{allsum} result for $\mathcal{A}_{tri}$ yields the second moment $E[X^2]$. Specifically, for a path $\pi$, the weighting ensures that the off-diagonal terms of the expansion $(\sum 1)^2$ are counted twice and the diagonal terms are counted once, successfully yielding $|\pi|^2$.
+
+\subsubsection*{Runtime}
+
+The state space for $\mathcal{A}_{tri}$ is $3|Q|$. The time complexity for the \texttt{allsum} algorithm on this expanded graph is:
+$$\mathcal{O}((3|Q|)^3) = \mathcal{O}(27|Q|^3)$$
+
+Dropping the constant coefficient, the final complexity remains:
+$$\mathcal{O}(|Q|^3)$$
 
 \end{subquestion}
 
