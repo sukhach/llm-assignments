@@ -1,30 +1,61 @@
 \begin{question}{Limitations of Transformers on Simple Languages}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Simplifying the attention mechanism.}}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} v_{t'}^{(l)}, x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} ( (W_V^{(l)})^\top x_{t'}^{(l)} ), x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( (W_V^{(l)})^\top \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)} \right), x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f'(z_t^{(l)}, x_t^{(l)}) = f((W_V^{(l)})^\top z_t^{(l)}, x_t^{(l)})
+    \end{equation}
 
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Bounding $\|x_{t}^{(l)}\|$.}}
+
+    Proof by induction:
+
+    \subsubsection*{\textbf{Base case}}
+
+    By definition of the row-norm $\|X^{(0)}\|_{2,\infty}$, it holds that:
+    \begin{equation}
+    \|x_t^{(0)}\| \le \max_{i} \|x_i^{(0)}\| = \|X^{(0)}\|_{2,\infty}
+    \end{equation}
+
+    \subsubsection*{\textbf{Inductive step}}
+
+    Assume the bound holds for layer $l$. For layer $l+1$, we use the update rule $x_t^{(l+1)} = f(z_t^{(l)}, x_t^{(l)})$. Since $f$ is Lipschitz continuous with constant $L_f$ and $f(0,0)=0$:
+    \begin{equation}
+    \|x_t^{(l+1)}\| = \|f(z_t^{(l)}, x_t^{(l)}) - f(0,0)\| \le L_f (\|z_t^{(l)}\| + \|x_t^{(l)}\|)
+    \end{equation}
+
+    Because $z_t^{(l)} = \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}$ and the softmax scores $s_{t,t'}$ are non-negative and sum to 1:
+    \begin{equation}
+    \|z_t^{(l)}\| = \left\| \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)} \right\| \le \sum_{t'=1}^{T} s_{t,t'}^{(l)} \|x_{t'}^{(l)}\| \le \max_{t'} \|x_{t'}^{(l)}\| = \|X^{(l)}\|_{2,\infty}
+    \end{equation}
+
+    Substituting this back into the Lipschitz bound:
+    \begin{equation}
+    \|x_t^{(l+1)}\| \le L_f (\|X^{(l)}\|_{2,\infty} + \|X^{(l)}\|_{2,\infty}) = 2L_f \|X^{(l)}\|_{2,\infty}
+    \end{equation}
+
+    Since this holds for all $t$, we have $\|X^{(l+1)}\|_{2,\infty} \le 2L_f \|X^{(l)}\|_{2,\infty}$. Applying this recursively from $l=0$ yields:
+    \begin{equation}
+    \|x_t^{(l)}\| \le (2L_f)^l \|X^{(0)}\|_{2,\infty}
+    \end{equation}
 
 \end{subquestion}
 
-\begin{subquestion}
-
-\end{subquestion}
-
-\begin{subquestion}
-
-\end{subquestion}
-
-\begin{subquestion}
-
-\end{subquestion}
-
-\begin{subquestion}
-
-\end{subquestion}
-
-\begin{subquestion}
+\begin{subquestion}{\textbf{Bounding Attention Logits.}}
 
 \end{subquestion}
 

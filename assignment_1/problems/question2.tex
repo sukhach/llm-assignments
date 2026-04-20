@@ -100,6 +100,45 @@ $$\mathcal{O}(|Q|^3)$$
 
 \begin{subquestion}
 
+To prove that $H(p_{LM}) = \lambda^{\top}(I - T)^{-1}\xi$, we utilize the provided hints regarding the local transition entropy and the chain rule for entropy[cite: 173, 175, 183].
+
+\subsubsection*{1. Defining the Variables}
+Following the suggestion in the prompt, let $\Pi_q$ be a random variable ranging over paths in $\mathcal{A}$ starting in state $q$[cite: 179, 180]. Let $\tau_q$ be a random variable over the outgoing transitions from $q$ or termination at $q$[cite: 179, 180]. 
+By definition, the local entropy at state $q$, denoted $\xi_q$, is[cite: 176]:
+\begin{equation}
+    \xi_q = H(\tau_q) = -\sum_{q \xrightarrow{y/w} q'} w \log w - \rho_q \log \rho_q
+\end{equation}
+
+\subsubsection*{2. Recursive Entropy Decomposition}
+The entropy of a path starting at state $q$ can be decomposed using the chain rule of entropy: $H(X, Y) = H(X) + H(Y|X)$[cite: 183, 184]. For a path $\Pi_q$, the "first step" is $\tau_q$. Since the automaton is deterministic, the next state $q'$ is uniquely determined by the choice of transition in $\tau_q$[cite: 172]. Thus:
+\begin{equation}
+    H(\Pi_q) = H(\tau_q) + \sum_{q \xrightarrow{y/w} q'} \mathbb{P}(\tau_q = q \xrightarrow{y/w} q') H(\Pi_{q'})
+\end{equation}
+Substituting $\xi_q$ and the transition weights $w$[cite: 182], we obtain:
+\begin{equation}
+    H(\Pi_q) = \xi_q + \sum_{q \xrightarrow{y/w} q'} w H(\Pi_{q'})
+\end{equation}
+
+\subsubsection*{3. Matrix Formulation and Solution}
+Let $\mathbf{h} \in \mathbb{R}^{|Q|}$ be the vector of path entropies where $\mathbf{h}_q = H(\Pi_q)$. Using the transition matrix $T$ defined in Eq. (15) [cite: 141, 142, 145], we can rewrite the recursive relation in matrix form:
+\begin{equation}
+    \mathbf{h} = \xi + T\mathbf{h}
+\end{equation}
+Rearranging the terms gives $(I - T)\mathbf{h} = \xi$. Since all eigenvalues of $T$ have magnitude less than 1, the matrix $(I - T)$ is invertible[cite: 146]:
+\begin{equation}
+    \mathbf{h} = (I - T)^{-1}\xi
+\end{equation}
+
+\subsubsection*{4. Conclusion}
+The total entropy of the language model $H(p_{LM})$ is the expected entropy of paths starting from the initial state distribution $\lambda$[cite: 140, 147, 152]:
+\begin{equation}
+    H(p_{LM}) = \sum_{q \in Q} \lambda_q H(\Pi_q) = \lambda^{\top}\mathbf{h}
+\end{equation}
+Substituting the expression for $\mathbf{h}$ yields the desired result[cite: 175]:
+\begin{equation}
+    H(p_{LM}) = \lambda^{\top}(I - T)^{-1}\xi
+\end{equation}
+
 \end{subquestion}
 
 \end{question}
