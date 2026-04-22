@@ -57,6 +57,36 @@
 
 \begin{subquestion}{\textbf{Bounding Attention Logits.}}
 
+    An entry of the pre-softmax attention scores $l_{t, t'}$ is defined by the dot product of the query $q_t^{(l)}$ and key $k_{t'}^{(l)}$:
+    \begin{equation}
+    l_{t, t'} = k_{t'}^{(l)\top} q_t^{(l)}
+    \end{equation}
+
+    By the Cauchy-Schwarz inequality, the magnitude of this scalar is bounded by the product of the vector norms:
+    \begin{equation}
+    |l_{t, t'}| \le \|k_{t'}^{(l)}\| \cdot \|q_t^{(l)}\|
+    \end{equation}
+
+    Using the definitions $q_t^{(l)} = (W_Q^{(l)})^\top x_t^{(l)}$ and $k_{t'}^{(l)} = (W_K^{(l)})^\top x_{t'}^{(l)}$[cite: 377, 380], we apply the property of matrix operator norms:
+    \begin{equation}
+    |l_{t, t'}| \le (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|) \cdot \|x_{t'}^{(l)}\| \cdot \|x_t^{(l)}\|
+    \end{equation}
+
+    From sub-question 4b, we have $\|x_t^{(l)}\| \le F$ for all layers $l \in [L]$[cite: 431, 436]. Substituting this bound:
+    \begin{equation}
+    |l_{t, t'}| \le (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|) \cdot F^2
+    \end{equation}
+
+    By defining $L_{att}$ as a constant bounding the product of the query and key weight matrix norms across all layers:
+    \begin{equation}
+    L_{att} \ge \max_{l} (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|)
+    \end{equation}
+
+    It follows that for any $t, t'$, the magnitude of the logit is bounded by $A$:
+    \begin{equation}
+    \|l\|_{\infty} \le F^2 L_{att} = A
+    \end{equation}
+
 \end{subquestion}
 
 \begin{subquestion}

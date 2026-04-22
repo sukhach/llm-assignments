@@ -1,8 +1,8 @@
-PWD /Users/pfarkas/git-repos/llm-assignments/assignment_1
+PWD /Users/pfarkas/git-repos/llm-assignments/Assignment 1
 INPUT /usr/local/texlive/2026/texmf.cnf
 INPUT /usr/local/texlive/2026/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt
-INPUT /Users/pfarkas/git-repos/llm-assignments/assignment_1/main.tex
+INPUT /Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex
 OUTPUT main.log
 INPUT ./ETHexercise.cls
 INPUT ETHexercise.cls
@@ -707,6 +707,7 @@ INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi12.pfb
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/frcursive/frcr10.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/mathabx-type1/matha12.pfb
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/type1/public/mathabx-type1/matha6.pfb

@@ -1,0 +1,216 @@
+\begin{question}{Limitations of Transformers on Simple Languages}
+
+\begin{subquestion}{\textbf{Simplifying the attention mechanism.}}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} v_{t'}^{(l)}, x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} ( (W_V^{(l)})^\top x_{t'}^{(l)} ), x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f' \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}, x_{t}^{(l)} \right) = f \left( (W_V^{(l)})^\top \left( \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)} \right), x_{t}^{(l)} \right)
+    \end{equation}
+
+    \begin{equation}
+    f'(z_t^{(l)}, x_t^{(l)}) = f((W_V^{(l)})^\top z_t^{(l)}, x_t^{(l)})
+    \end{equation}
+
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Bounding $\|x_{t}^{(l)}\|$.}}
+
+    Proof by induction:
+
+    \subsubsection*{\textbf{Base case}}
+
+    By definition of the row-norm $\|X^{(0)}\|_{2,\infty}$, it holds that:
+    \begin{equation}
+    \|x_t^{(0)}\| \le \max_{i} \|x_i^{(0)}\| = \|X^{(0)}\|_{2,\infty}
+    \end{equation}
+
+    \subsubsection*{\textbf{Inductive step}}
+
+    Assume the bound holds for layer $l$. For layer $l+1$, we use the update rule $x_t^{(l+1)} = f(z_t^{(l)}, x_t^{(l)})$. Since $f$ is Lipschitz continuous with constant $L_f$ and $f(0,0)=0$:
+    \begin{equation}
+    \|x_t^{(l+1)}\| = \|f(z_t^{(l)}, x_t^{(l)}) - f(0,0)\| \le L_f (\|z_t^{(l)}\| + \|x_t^{(l)}\|)
+    \end{equation}
+
+    Because $z_t^{(l)} = \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}$ and the softmax scores $s_{t,t'}$ are non-negative and sum to 1:
+    \begin{equation}
+    \|z_t^{(l)}\| = \left\| \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)} \right\| \le \sum_{t'=1}^{T} s_{t,t'}^{(l)} \|x_{t'}^{(l)}\| \le \max_{t'} \|x_{t'}^{(l)}\| = \|X^{(l)}\|_{2,\infty}
+    \end{equation}
+
+    Substituting this back into the Lipschitz bound:
+    \begin{equation}
+    \|x_t^{(l+1)}\| \le L_f (\|X^{(l)}\|_{2,\infty} + \|X^{(l)}\|_{2,\infty}) = 2L_f \|X^{(l)}\|_{2,\infty}
+    \end{equation}
+
+    Since this holds for all $t$, we have $\|X^{(l+1)}\|_{2,\infty} \le 2L_f \|X^{(l)}\|_{2,\infty}$. Applying this recursively from $l=0$ yields:
+    \begin{equation}
+    \|x_t^{(l)}\| \le (2L_f)^l \|X^{(0)}\|_{2,\infty}
+    \end{equation}
+
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Bounding Attention Logits.}}
+
+    An entry of the pre-softmax attention scores $l_{t, t'}$ is defined by the dot product of the query $q_t^{(l)}$ and key $k_{t'}^{(l)}$:
+    \begin{equation}
+    l_{t, t'} = k_{t'}^{(l)\top} q_t^{(l)}
+    \end{equation}
+
+    By the Cauchy-Schwarz inequality, the magnitude of this scalar is bounded by the product of the vector norms:
+    \begin{equation}
+    |l_{t, t'}| \le \|k_{t'}^{(l)}\| \cdot \|q_t^{(l)}\|
+    \end{equation}
+
+    Using the definitions $q_t^{(l)} = (W_Q^{(l)})^\top x_t^{(l)}$ and $k_{t'}^{(l)} = (W_K^{(l)})^\top x_{t'}^{(l)}$, we apply the property of matrix operator norms:
+    \begin{equation}
+    |l_{t, t'}| \le (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|) \cdot \|x_{t'}^{(l)}\| \cdot \|x_t^{(l)}\|
+    \end{equation}
+
+    From sub-question 4b, we have $\|x_t^{(l)}\| \le F$ for all layers $l \in [L]$. Substituting this bound:
+    \begin{equation}
+    |l_{t, t'}| \le (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|) \cdot F^2
+    \end{equation}
+
+    By defining $L_{att}$ as a constant bounding the product of the query and key weight matrix norms across all layers:
+    \begin{equation}
+    L_{att} \ge \max_{l} (\|(W_K^{(l)})^\top\| \cdot \|(W_Q^{(l)})^\top\|)
+    \end{equation}
+
+    It follows that for any $t, t'$, the magnitude of the logit is bounded by $A$:
+    \begin{equation}
+    \|l\|_{\infty} \le F^2 L_{att} = A
+    \end{equation}
+
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Bounding Softmax Values.}}
+
+    From sub-question 4c, we have $\|l\|_{\infty} \le A$, which implies that for all $j \in \{1, \dots, T\}$:
+    \begin{equation}
+    -A \le l_j \le A
+    \end{equation}
+    Applying the monotonically increasing exponential function, we obtain:
+    \begin{equation}
+    \exp(-A) \le \exp(l_j) \le \exp(A)
+    \end{equation}
+
+    The softmax value $s_t$ is defined as the ratio of the exponentiated logit to the sum of all exponentiated logits in the sequence:
+    \begin{equation}
+    s_t = \frac{\exp(l_t)}{\sum_{j=1}^T \exp(l_j)}
+    \end{equation}
+
+    To derive the upper bound for $s_t$, we maximize the numerator ($\exp(A)$) and minimize each term in the denominator's sum ($\exp(-A)$):
+    \begin{equation}
+    s_t \le \frac{\exp(A)}{\sum_{j=1}^T \exp(-A)} = \frac{\exp(A)}{T \cdot \exp(-A)} = \frac{\exp(2A)}{T}
+    \end{equation}
+
+    To derive the lower bound, we minimize the numerator ($\exp(-A)$) and maximize each term in the denominator's sum ($\exp(A)$):
+    \begin{equation}
+    s_t \ge \frac{\exp(-A)}{\sum_{j=1}^T \exp(A)} = \frac{\exp(-A)}{T \cdot \exp(A)} = \frac{\exp(-2A)}{T}
+    \end{equation}
+
+    Combining these inequalities yields the required bound for all $t \in \{1, \dots, T\}$:
+    \begin{equation}
+    \frac{\exp(-2A)}{T} \le s_t \le \frac{\exp(2A)}{T}
+    \end{equation}
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Bounding $\Delta_t^{(l)}$.}}
+
+    We define the difference in activations at layer $l$ as $\Delta_t^{(l)} = \|z_t^{(l)} - z_t^{\prime(l)}\|$. 
+    Substituting the definition $z_t^{(l)} = \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)}$:
+    \begin{equation}
+    \Delta_t^{(l)} = \left\| \sum_{t'=1}^{T} s_{t,t'}^{(l)} x_{t'}^{(l)} - \sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} x_{t'}^{\prime(l)} \right\|
+    \end{equation}
+
+    Adding and subtracting the term $\sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} x_{t'}^{(l)}$ inside the norm:
+    \begin{equation}
+    \Delta_t^{(l)} = \left\| \sum_{t'=1}^{T} (s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}) x_{t'}^{(l)} + \sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} (x_{t'}^{(l)} - x_{t'}^{\prime(l)}) \right\|
+    \end{equation}
+
+    By the triangle inequality and the homogeneity of the norm, we obtain:
+    \begin{equation}
+    \Delta_t^{(l)} \le \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|x_{t'}^{(l)}\| + \sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} \|x_{t'}^{(l)} - x_{t'}^{\prime(l)}\|
+    \end{equation}
+    which matches equation (49).
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Bounding The Difficult, Initial Step.}}
+
+    Using the definition $\|x_{t'}^{(l)}\| \le \|X^{(l)}\|_{2,\infty}$ for all $t'$:
+    \begin{align*}
+        \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|x_{t'}^{(l)}\| &\le \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|X^{(l)}\|_{2,\infty} \\
+        &\le \left( \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \right) \|X^{(l)}\|_{2,\infty}
+    \end{align*}
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Convergence.}}
+
+    Suppose we have two sequences such that $|a_T - b_T| = \mathcal{O}(1/T)$. By definition, there exists a constant $C$ such that for sufficiently large $T$:
+    \begin{equation}
+    |a_T - b_T| \le \frac{C}{T}
+    \end{equation}
+
+    We apply the \textbf{Mean Value Theorem} to the function $f$ on the interval between $a_T$ and $b_T$. This states that there exists some point $c_T$ such that:
+    \begin{equation}
+    f(a_T) - f(b_T) = f'(c_T)(a_T - b_T)
+    \end{equation}
+
+    Taking the absolute value of both sides gives:
+    \begin{equation}
+    |f(a_T) - f(b_T)| = |f'(c_T)| \cdot |a_T - b_T|
+    \end{equation}
+
+    Given that the derivative $f'$ is bounded by some constant $K$ on the relevant domain, we can substitute the known bounds:
+    \begin{align*}
+    |f(a_T) - f(b_T)| &\le K \cdot |a_T - b_T| \\
+    &\le K \cdot \frac{C}{T}
+    \end{align*}
+
+    Since $K \cdot C$ is a constant independent of $T$, we conclude:
+    \begin{equation}
+    |f(a_T) - f(b_T)| = \mathcal{O}\left(\frac{1}{T}\right)
+    \end{equation}
+
+    Applying the general result to exp:
+    \begin{equation}
+    |a_T - b_T| = \mathcal{O}\left(\frac{1}{T}\right) \implies |\exp(a_T) - \exp(b_T)| = \mathcal{O}\left(\frac{1}{T}\right)
+    \end{equation}
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Inductive Proof of Transformer Stability}}
+    
+    Given the assumption that $||w_{T,d}^{(l)}||_{\infty} = \mathcal{O}(1/T)$ for all $d \in [D]$, the difference in contextual representations is bounded. Since $||x_{t'}^{(l)}||$ is bounded by a constant independent of $T$ (from 4b), we can factor it out of the summation:
+    \begin{equation}
+    \sum_{t'=1}^{T}|s_{t,t'}^{(l)}-s_{t,t'}^{\prime(l)}|||x_{t'}^{(l)}|| \le ||X^{(l)}||_{2,\infty} \sum_{t'=1}^{T}|s_{t,t'}^{(l)}-s_{t,t'}^{\prime(l)}|
+    \end{equation}
+    From the result in 4h, the sum of absolute differences of the softmax values is $\mathcal{O}(1/T)$. Therefore:
+    \begin{equation}
+    \text{Difficult Part} = \text{Constant} \cdot \mathcal{O}\left(\frac{1}{T}\right) = \mathcal{O}\left(\frac{1}{T}\right)
+    \end{equation}
+\end{subquestion}
+
+\begin{subquestion}{Bounding The Difficult Part}
+
+    We assume $\|w_{T,d}^{(l)}\|_{\infty} = \mathcal{O}(1/T)$. This implies the attention logits experience a perturbation of $\mathcal{O}(1/T)$. 
+
+    First, from sub-question \textbf{4b}, the norm of the representations is bounded by a constant $C$ that does not depend on $T$, meaning $\|x_{t'}^{(l)}\| = \mathcal{O}(1)$. 
+
+    Second, applying the result from \textbf{4h}, we know that an $\mathcal{O}(1/T)$ change in logits results in a change to individual softmax weights of $|s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| = \mathcal{O}(1/T^2)$.
+
+    We can now bound the total summation by pulling out the constant term:
+    \begin{align*}
+    \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|x_{t'}^{(l)}\| &\le \left( \max_{t'} \|x_{t'}^{(l)}\| \right) \sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \\
+    &= \mathcal{O}(1) \cdot \sum_{t'=1}^{T} \mathcal{O}\left(\frac{1}{T^2}\right) \\
+    &= \mathcal{O}(1) \cdot T \cdot \mathcal{O}\left(\frac{1}{T^2}\right) \\
+    &= \mathcal{O}\left(\frac{1}{T}\right)
+    \end{align*}
+\end{subquestion}
+
+\end{question}

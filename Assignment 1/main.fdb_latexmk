@@ -1,12 +1,12 @@
 # Fdb version 4
-["makeindex main.idx"] 1775995547.07241 "main.idx" "main.ind" "main" 1776698719.4164 2
-  "main.idx" 1776698718.84918 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+["makeindex main.idx"] 1775995547.07241 "main.idx" "main.ind" "main" 1776853048.8868 2
+  "main.idx" 1776853048.30349 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   (generated)
   "main.ilg"
   "main.ind"
   (rewritten before read)
-["pdflatex"] 1776698717.97131 "/Users/pfarkas/git-repos/llm-assignments/assignment_1/main.tex" "main.pdf" "main" 1776698719.41649 0
-  "/Users/pfarkas/git-repos/llm-assignments/assignment_1/main.tex" 1776606869.12954 1577 9bcff36f8aa22bc311375db3abac1479 ""
+["pdflatex"] 1776853047.41278 "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" "main.pdf" "main" 1776853048.88688 0
+  "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" 1776606869.12954 1577 9bcff36f8aa22bc311375db3abac1479 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1136768653 1536 06717a2b50de47d4087ac0e6cd759455 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy6.tfm" 1246382020 1124 14ccf5552bc7f77ca02a8a402bea8bfb ""
@@ -59,6 +59,7 @@
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmss12.pfb" 1248133631 24393 3b7eb51a67a0a62aec5849271bdb9c2e ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmssbx10.pfb" 1248133631 28902 2f5c04fd2884d1878057baa5aad22765 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmssi12.pfb" 1248133631 25095 0ff1f6d531b320ecbbd6ea84d875816c ""
+  "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1248133631 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/frcursive/frcr10.pfb" 1320883257 82803 a105eb5fd552795eab2ea58eff837e3d ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/mathabx-type1/matha12.pfb" 1295482684 90183 4f8564d9e14735e75e1b76b2a9be3de0 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/type1/public/mathabx-type1/matha6.pfb" 1295482684 93176 0e192b93dceeff9d5c17507fff8379cc ""
@@ -384,12 +385,12 @@
   "custom_macros.tex" 1775905560 146 f00060a9bb4d1b7b2b34d06ea1538859 ""
   "ethlogo.pdf" 1775905560 12613 f33514e6c63ac6308c77de3777c74eb1 ""
   "macros.tex" 1775905560 64233 9779e449af41ce6f2a7498b5d4bab148 ""
-  "main.aux" 1776698719.28113 506 dc3cc17a8a0c84f7c2e496f2be24d92d "pdflatex"
+  "main.aux" 1776853048.74915 506 7dd1197eefbe1039ecd578be1ff6a9e8 "pdflatex"
   "main.ind" 0 -1 0 "makeindex main.idx"
-  "main.out" 1776698719.05021 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.out" 1776853048.50108 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   "main.tex" 1776606869.12954 1577 9bcff36f8aa22bc311375db3abac1479 ""
   "preamble.tex" 1775913618.33669 10998 8faf64ccc2069ef865b36670e9d9b09c ""
-  "problems/question4.tex" 1776698714.7561 2717 bfa1126fb70973bd19aa685d9d55858d ""
+  "problems/question4.tex" 1776853044.19817 10141 4511762fcf9effcf7b7f328c19e87d80 ""
   (generated)
   "main.aux"
   "main.idx"
