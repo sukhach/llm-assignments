@@ -184,19 +184,12 @@
     \end{equation}
 \end{subquestion}
 
-\begin{subquestion}{\textbf{Inductive Proof of Transformer Stability}}
-    
-    Given the assumption that $||w_{T,d}^{(l)}||_{\infty} = \mathcal{O}(1/T)$ for all $d \in [D]$, the difference in contextual representations is bounded. Since $||x_{t'}^{(l)}||$ is bounded by a constant independent of $T$ (from 4b), we can factor it out of the summation:
-    \begin{equation}
-    \sum_{t'=1}^{T}|s_{t,t'}^{(l)}-s_{t,t'}^{\prime(l)}|||x_{t'}^{(l)}|| \le ||X^{(l)}||_{2,\infty} \sum_{t'=1}^{T}|s_{t,t'}^{(l)}-s_{t,t'}^{\prime(l)}|
-    \end{equation}
-    From the result in 4h, the sum of absolute differences of the softmax values is $\mathcal{O}(1/T)$. Therefore:
-    \begin{equation}
-    \text{Difficult Part} = \text{Constant} \cdot \mathcal{O}\left(\frac{1}{T}\right) = \mathcal{O}\left(\frac{1}{T}\right)
-    \end{equation}
+\begin{subquestion}{\textbf{Softmax.}}
+
+    Skipped.
 \end{subquestion}
 
-\begin{subquestion}{Bounding The Difficult Part}
+\begin{subquestion}{\textbf{Bounding The Difficult Part, Final Step.}}
 
     We assume $\|w_{T,d}^{(l)}\|_{\infty} = \mathcal{O}(1/T)$. This implies the attention logits experience a perturbation of $\mathcal{O}(1/T)$. 
 
@@ -213,4 +206,72 @@
     \end{align*}
 \end{subquestion}
 
-\end{question}
+\begin{subquestion}{\textbf{Combining All Results}}
+
+We prove Equations (55) and (56) using a single induction on the layer index $l$.
+
+\textbf{Base Case ($l=0$):}
+
+At the input layer, strings $y$ and $y'$ differ only at position $t^*$. Thus, $\|x_{t^*}^{(0)} - x_{t^*}^{\prime(0)}\| = \mathcal{O}(1)$ and $\|x_t^{(0)} - x_t^{\prime(0)}\| = 0$ for $t \neq t^*$. This satisfies the initial condition for (56)[cite: 420, 422].
+
+\textbf{Inductive Step:}
+
+Assume Equation (56) holds for layer $l$. We use this to prove both claims for the next state.
+
+\textbf{Step 1: Proving (55) (Stability of the Attention Output)}
+Using the decomposition from 4e [cite: 455-456], we bound the attention output difference $\Delta_t^{(l)}$ as follows:
+\begin{equation}
+\Delta_t^{(l)} \le \underbrace{\sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|x_{t'}^{(l)}\|}_{\text{Term 1: Difficult Part}} + \underbrace{\sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} \|x_{t'}^{(l)} - x_{t'}^{\prime(l)}\|}_{\text{Term 2: Residual Errors}}
+\end{equation}
+
+\begin{itemize}
+    \item \textbf{Term 1 (Application of 4h and 4i):} Sub-question \textbf{4h} establishes that individual attention weights change by $\mathcal{O}(1/T^2)$ [cite: 471-472]. Since representations $\|x_{t'}^{(l)}\|$ are bounded by a constant (from \textbf{4b} [cite: 427-431]), sub-question \textbf{4i} concludes the sum of these $T$ differences is $\mathcal{O}(1/T)$ [cite: 478-479].
+    \item \textbf{Term 2 (Application of 4d and Hypothesis):} We split the sum at $t'=t^*$. At the flipped bit, $s_{t,t^*}^{\prime(l)} \|x_{t^*}^{(l)} - x_{t^*}^{\prime(l)}\| = \mathcal{O}(1/T) \cdot \mathcal{O}(1) = \mathcal{O}(1/T)$ using the weight bound from \textbf{4d} [cite: 437-439] and the hypothesis. For $t' \neq t^*$, the hypothesis states $\|x_{t'} - x'_{t'}\| = \mathcal{O}(1/T)$, so the weighted sum is also $\mathcal{O}(1/T)$.
+\end{itemize}
+Summing these yields $\Delta_t^{(l)} = \mathcal{O}(1/T) + \mathcal{O}(1/T) = \mathcal{O}(1/T)$, proving Equation (55) [cite: 489-491].
+
+\textbf{Step 2: Proving (56) for Layer $l+1$ (Stability of the Representation)}
+The next representation is $x_t^{(l+1)} = f(z_t^{(l)}, x_t^{(l)})$[cite: 392]. Applying the Lipschitz continuity of $f$[cite: 398, 412]:
+\begin{equation}
+\|x_t^{(l+1)} - x_t^{\prime(l+1)}\| \le L_f \left( \Delta_t^{(l)} + \|x_t^{(l)} - x_t^{\prime(l)}\| \right)
+\end{equation}
+\begin{itemize}
+    \item For $t \neq t^*$: Since $\Delta_t^{(l)}$ and the hypothesis $\|x_t^{(l)} - x_t^{\prime(l)}\|$ are both $\mathcal{O}(1/T)$, the result is $\mathcal{O}(1/T)$.
+    \item For $t = t^*$: While $\Delta_{t^*}^{(l)} = \mathcal{O}(1/T)$, the term $\|x_{t^*}^{(l)} - x_{t^*}^{\prime(l)}\|$ is $\mathcal{O}(1)$, so the difference remains $\mathcal{O}(1)$.
+\end{itemize}
+This completes the inductive step, proving that stability is preserved for all layers $l \in [L]$ .
+
+\textbf{Conclusion: Impact on $h(y)$} \\
+The final activation is defined as the representation of the EOS token at the final layer, $h(y) = x_T^{(L)}$. Since $t^* < T$ by assumption, position $T$ is not the location of the flipped bit. Thus, applying the bound from Eq. (56) for $t \neq t^*$ at layer $L$, we conclude:
+\begin{equation}
+\|h(y) - h(y')\| = \|x_T^{(L)} - x_T^{\prime(L)}\| = \mathcal{O}\left(\frac{1}{T}\right)
+\end{equation}
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Implications on Odd-1.}}
+
+\begin{enumerate}[label=(\roman*), leftmargin=2em, nosep]
+\item If $y \in \text{Odd-1}$, flipping a single bit $y_{t^*}$ changes the total count of 1s by exactly one. Consequently, the number of 1s becomes even, meaning $y' \notin \text{Odd-1}$.
+
+\item Because the final activations $h(y)$ and $h(y')$ are nearly identical (differing only by $\mathcal{O}(1/T)$), the resulting probabilities $\hat{p}$ and $\hat{p}'$ will also be nearly identical. The transformer will likely misclassify $y'$ as "Odd" as well.
+
+\item As the string length $T$ approaches infinity, the difference between the representations vanishes ($1/T \to 0$). Thus the model assigns the exact same probability to both the "Odd" and "Even" strings. Since their true labels are different, the transformer will misclassify at least one of them, showing it cannot solve the Odd-1 task for long strings.
+\end{enumerate}
+
+\end{subquestion}
+
+\begin{subquestion}{\textbf{A Discussion.}}
+
+\begin{enumerate}[label=(\roman*), leftmargin=2em, nosep]
+    \item Layer normalization does not change the fundamental conclusion because it does not fix the "averaging" problem.
+    
+    \begin{itemize}[leftmargin=1.5em]
+        \item \textbf{Case $\epsilon > 0$}: The layer is \textbf{Lipschitz continuous}. Because it is a stable transformation, it cannot amplify a signal that is already vanishing, meaning the difference between representations remains $\mathcal{O}(1/T)$.
+        \item \textbf{Case $\epsilon = 0$}: The layer becomes \textbf{numerically unstable}. While this breaks the stability proof, it leads to division by zero or chaotic outputs rather than providing the logic needed to count parity correctly.
+    \end{itemize}
+
+    \item The asymptotic result tells us that the model's success on short strings ($|y| \le T^*$) is a \textbf{numerical approximation} rather than a logical understanding of parity. The model cannot learn a scale-invariant rule.
+
+\end{enumerate}
+
+\end{subquestion}
