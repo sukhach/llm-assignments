@@ -1,10 +1,12 @@
 \begin{question}{Efficiently Simulating Bounded Stacks with RNNs}
 
-\begin{subquestion}
+\textbf{Part I. $D(k,m)$ is Finite-State}
 
-    Result:
+\begin{subquestion}{\textbf{Stack Transitions.}}
+
     \begin{table}[H]
-        \begin{tabular}{cccc}
+        \centering
+        \begin{tabular}{l|ccc}
             \toprule
             & $\stackseq_1 = \openBr{2}$ &
             $\stackseq_2 = \openBr{1} \openBr{1} \openBr{1}$ &
@@ -21,67 +23,47 @@
 
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{FSA Construction for $D(k,m)$}.}
 
-\begin{description}
-
-    \item[$\Sigma$:]
-    $\{ \openBr{1}, ..., \openBr{k} \} \cup \{ \closeBr{1}, ..., \closeBr{k} \}$
-
-    \item[$Q$:]
-    $\{ \emptyset \} \cup \bigcup_{n=1}^{m} \{ 1, ..., k \}^n$
-
-    \item[$\delta$:]
-    $\{(q_1, \openBr{n}, q_2) | q_1 \in Q$ and $q_2 \in Q$ and $q_2 = q_1 \cdot n \} \cup \{(q_1, \closeBr{n}, q_2) | q_1 \in Q$ and $q_2 \in Q$ and $q_1 = q_2 \cdot n \}$
-
-    \item[$I$:]
-    $\{ \emptyset \}$
-
-    \item[$F$:]
-    $\{ \emptyset \}$
-
-\end{description}
-
-Polished:
-
-\begin{description}
-    \item[$\Sigma$:] The alphabet consisting of $k$ types of brackets: 
-    $\Sigma = \{ \openBr{1}, \dots, \openBr{k} \} \cup \{ \closeBr{1}, \dots, \closeBr{k} \}$.
-
-    \item[$Q$:] The set of states representing all valid stack sequences up to depth $m$, plus a dedicated rejection state:
-    $Q = \{ s \in \{ \openBr{1}, \dots, \openBr{k} \}^* \mid |s| \le m \} \cup \{ q_{rej} \}$.
-    The empty sequence $\epsilon$ represents the empty stack.
-
-    \item[$\delta$:] The transition function $\delta: Q \times \Sigma \to Q$. For any state $q \in Q \setminus \{q_{rej}\}$:
+\textbf{Formal Definition:}
+We define the FSA $\mathcal{A} = (\Sigma, Q, \delta, I, F)$ as follows:
+\begin{itemize}
+    \item \textbf{$\Sigma$:} The alphabet of $2k$ brackets: $\Sigma = \{ \langle_1, \dots, \langle_k, \rangle_1, \dots, \rangle_k \}$.
+    \item \textbf{$Q$:} The set of states representing all valid stack configurations up to depth $m$, using the notation $[s]$ for a stack sequence $s$:
+    $Q = \{ [s] \mid s \in \{ \langle_1, \dots, \langle_k \}^* \text{ and } |s| \le m \} \cup \{ q_{rej} \}$.
+    \item \textbf{$I$:} The initial state is the empty stack: $I = [\epsilon]$.
+    \item \textbf{$F$:} The set of final states is $F = \{ [\epsilon] \}$, as a valid Dyck string must end with an empty stack.
+    \item \textbf{$\delta$:} The transition function $\delta: Q \times \Sigma \to Q$ for any state $[s] \neq q_{rej}$:
     \begin{itemize}
-        \item \textbf{Push:} For an opening bracket $\openBr{n} \in \Sigma$:
-        \[ \delta(q, \openBr{n}) = 
-        \begin{cases} 
-        q \cdot \openBr{n} & \text{if } |q| < m \\
-        q_{rej} & \text{if } |q| = m 
-        \end{cases} \]
-        
-        \item \textbf{Pop:} For a closing bracket $\closeBr{n} \in \Sigma$:
-        \[ \delta(q, \closeBr{n}) = 
-        \begin{cases} 
-        q' & \text{if } q = q' \cdot \openBr{n} \\
-        q_{rej} & \text{otherwise}
-        \end{cases} \]
+        \item \textbf{Push:} For an opening bracket $\langle_n$: $\delta([s], \langle_n) = [s \cdot \langle_n]$ if $|s| < m$, otherwise $q_{rej}$.
+        \item \textbf{Pop:} For a closing bracket $\rangle_n$: $\delta([s], \rangle_n) = [s']$ if $s = s' \cdot \langle_n$, otherwise $q_{rej}$.
+        \item \textbf{Sink:} $\delta(q_{rej}, \sigma) = q_{rej}$ for all $\sigma \in \Sigma$.
     \end{itemize}
-    For the rejection state, the transition is a "sink": $\delta(q_{rej}, \sigma) = q_{rej}$ for all $\sigma \in \Sigma$.
+\end{itemize}
 
-    \item[$I$:] The initial state (starting with an empty stack): $q_0 = \epsilon$.
+\textbf{Reasoning about Correctness:}
+The automaton acts as a simulation of a stack. Each state $[s]$ tracks the sequence of currently unclosed brackets. 
+\begin{itemize}
+    \item When we see an opening bracket, we push it onto our state label. If the stack is already at depth $m$, we move to $q_{rej}$ because the string has exceeded the allowed nesting depth.
+    \item When we see a closing bracket, we check if it matches the top of our state's stack. If it matches, we pop it. If it doesn't match, it's an invalid Dyck sequence, and we move to $q_{rej}$.
+    \item Since we only accept at the empty stack state $[\epsilon]$, $\mathcal{A}$ correctly recognizes only those strings where every bracket was opened and closed in the correct order without ever exceeding depth $m$.
+\end{itemize}
 
-    \item[$F$:] The set of final (accepting) states: $F = \{ \epsilon \}$.
-\end{description}
+\textbf{Complexity Analysis:}
+\begin{itemize}
+    \item \textbf{States:} The number of possible stack sequences of length $i$ is $k^i$. Summing from length 0 to $m$ gives $\sum_{i=0}^m k^i$. Thus, the number of states $|Q|$ is $\mathcal{O}(k^m)$.
+    \item \textbf{Transitions:} Every state has $2k$ outgoing transitions (one for each bracket type). The total number of transitions is $\mathcal{O}(k \cdot k^m) = \mathcal{O}(k^{m+1})$.
+\end{itemize}
 
 \end{subquestion}
 
-\begin{subquestion}
+\textbf{Part II. Constructing RNN Dynamics}
 
-    Result:
+\begin{subquestion}{\textbf{Stack Transitions.}}
+
     \begin{table}[H]
-        \begin{tabular}{cccc}
+        \centering
+        \begin{tabular}{l|ccc}
             \toprule
             & $\stackseq_1 = \openBr{2} \begin{pmatrix} 0 \\ 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{pmatrix}$ &
             $\stackseq_2 = \openBr{1} \openBr{1} \openBr{1} \begin{pmatrix} 1 \\ 0 \\ 1 \\ 0 \\ 1 \\ 0 \end{pmatrix}$ &
@@ -98,98 +80,97 @@ Polished:
 
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Flexible RNN Model.}}
 
-\[
-\Sigma_{\text{open}} = \{ \langle_1, \dots, \langle_k \}, \quad \Sigma_{\text{close}} = \{ \rangle_1, \dots, \rangle_k \}
-\]
+We define the RNN dynamics $h_t = U(y_t)h_{t-1} + Vo_{y_t}$ such that the hidden state $h_t \in \mathbb{R}^{km}$ tracks the stack configuration.
 
-\[
-U(y_t) = \begin{cases} 
-    U_{\text{push}} & \text{if } y_t \in \Sigma_{\text{open}} \\
-    U_{\text{pop}} & \text{if } y_t \in \Sigma_{\text{close}} \\
-    \mathbf{I}_{km} & \text{if } y_t = \text{EOS}
-\end{cases}
-\]
+\begin{itemize}
+    \item \textbf{Recurrence Matrix $U(y_t) \in \mathbb{R}^{km \times km}$:} 
+    Depending on whether the input $y_t$ pushes to or pops from the stack, we define:
+    \[
+    U(y_t) = \begin{cases} 
+        U_{\text{push}} & \text{if } y_t \in \{ \langle_1, \dots, \langle_k \} \\
+        U_{\text{pop}} & \text{if } y_t \in \{ \rangle_1, \dots, \rangle_k \} \\
+        \mathbf{I}_{km} & \text{if } y_t = \text{EOS}
+    \end{cases}
+    \]
+    where the block-shift matrices are defined as:
+    \[
+    U_{\text{push}} = \begin{pmatrix}
+        \mathbf{0}_{k \times k} & \mathbf{0}_{k \times (m-1)k} \\
+        \mathbf{I}_{(m-1)k} & \mathbf{0}_{(m-1)k \times k}
+    \end{pmatrix}, \quad
+    U_{\text{pop}} = \begin{pmatrix}
+        \mathbf{0}_{(m-1)k \times k} & \mathbf{I}_{(m-1)k} \\
+        \mathbf{0}_{k \times k} & \mathbf{0}_{k \times (m-1)k}
+    \end{pmatrix}
+    \]
 
-\[
-U_{\text{push}} = \begin{pmatrix}
-    \mathbf{0}_{k \times k} & \mathbf{0}_{k \times (m-1)k} \\
-    \mathbf{I}_{(m-1)k} & \mathbf{0}_{(m-1)k \times k}
-\end{pmatrix}, \quad
-U_{\text{pop}} = \begin{pmatrix}
-    \mathbf{0}_{(m-1)k \times k} & \mathbf{I}_{(m-1)k} \\
-    \mathbf{0}_{k \times k} & \mathbf{0}_{k \times (m-1)k}
-\end{pmatrix}
-\]
+    \item \textbf{Input Matrix $V \in \mathbb{R}^{km \times (2k+1)}$:} 
+    $V$ extracts the one-hot encoding of an opening bracket and places it at the top of the stack:
+    \[
+    V = \begin{pmatrix}
+        \mathbf{I}_{k} & \mathbf{0}_{k \times k} & \mathbf{0}_{k \times 1} \\
+        \mathbf{0}_{(m-1)k \times k} & \mathbf{0}_{(m-1)k \times k} & \mathbf{0}_{(m-1)k \times 1}
+    \end{pmatrix}
+    \]
+\end{itemize}
 
-\[
-V = \begin{pmatrix}
-    \mathbf{I}_{k} & \mathbf{0}_{k \times (k+1)} \\
-    \mathbf{0}_{(m-1)k \times k} & \mathbf{0}_{(m-1)k \times (k+1)}
-\end{pmatrix}
-\]
+\textbf{Correspondence to Automaton $\mathcal{A}$:}
+\begin{itemize}
+    \item \textbf{Push:} When $y_t \in \{ \langle_1, \dots, \langle_k \}$, $U_{\text{push}}$ shifts the existing stack down to make room at the top. $V$ inserts the new bracket $e_n$ into that top slot. This results in a hidden state $h_t = (e_n, s_1, \dots, s_{m-1})^\top$, matching the state $[s \cdot \langle_n]$.
+    \item \textbf{Pop:} When $y_t \in \{ \rangle_1, \dots, \rangle_k \}$, $V$ contributes a zero vector. $U_{\text{pop}}$ shifts the existing stack up by one position, and promoting the element below it. This simulates the transition $[s' \cdot \langle_n] \to [s']$ in the hidden state space.
+\end{itemize}
 
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Standard Elman RNN.}}
 
-To simulate the bounded stack with a fixed recurrence matrix, we define a dual-track hidden state $h_t \in \mathbb{R}^{2km}$ partitioned into a top "push" track and a bottom "pop" track. At any time $t$, one track is active (encoding the stack state) while the other remains dormant (all zeros). 
+We define the parameters for the Elman RNN $h_t = H(Uh_{t-1} + Vo_{y_t} + b)$ to simulate the bounded stack automaton $\mathcal{A}$.
 
-Following the requirement to perform both operations simultaneously, the fixed recurrence matrix $U \in \mathbb{R}^{2km \times 2km}$ is defined to draw from either track of $h_{t-1}$ to generate candidates for both tracks in the next state:
-\[
-U = \begin{pmatrix}
-    U_{\text{push}} & U_{\text{push}} \\
-    U_{\text{pop}} & U_{\text{pop}}
-\end{pmatrix}
-\]
-where $U_{\text{push}}$ and $U_{\text{pop}}$ are the $km \times km$ transition matrices from Question 3d. To implement selection logic via the Heaviside activation we define a global bias vector $b \in \mathbb{R}^{2km}$ that "locks" the state by default:
-\[
-b = -\mathbf{1}_{2km} = \begin{pmatrix} 
-    -1 \\ 
-    \vdots \\ 
-    -1 
-\end{pmatrix}
-\]
-The input matrix $V \in \mathbb{R}^{2km \times (2k+1)}$ injects bracket identities and provides a $+1$ gating signal to counteract the bias for the correct track. Following the required symbol order:
-\[
-V = \begin{pmatrix}
-    \mathbf{I}_{k} + \mathbf{1}_{k \times k} & \mathbf{0}_{k \times k} & \mathbf{1}_{k \times 1} \\
-    \mathbf{1}_{(m-1)k \times k} & \mathbf{0}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times 1} \\
-    \mathbf{0}_{k \times k} & \mathbf{1}_{k \times k} & \mathbf{1}_{k \times 1} \\
-    \mathbf{0}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times 1}
-\end{pmatrix}
-\]
-The hidden state update $h_t = H(Uh_{t-1} + Vo_{y_t} + b)$ ensures that if $y_t$ is an opening bracket, the top track receives a $+1$ boost from $V$ to unlock the "push" operation ($1 + 1 - 1 = 1$), while the dormant bottom track is suppressed to $0$. A closing bracket similarly unlocks the bottom track, while EOS provides a boost to both tracks to preserve the final configuration.
+\begin{itemize}
+    \item \textbf{Hidden State $h_t \in \mathbb{R}^{2km}$:} 
+    We partitioned the state into two tracks of size $km$, the top "push" track and a bottom "pop" track. At any time, only one track is active (encoding the stack state) while the other remains dormant (all zeros).
 
------
-
-To prove the RNN simulates the FSA $\mathcal{A}$, we define an embedding function $\phi: Q \to \mathbb{R}^{2km}$ such that for a stack sequence $\gamma$, $\phi([\gamma])$ corresponds to the encoding $h(\gamma)$ residing in exactly one half of the hidden state while the other half is zeroed. We proceed by induction on the string length $t$. For the base case, the empty stack corresponds to $h_0 = \mathbf{0}_{2km}$. 
-
-For the inductive step, assume $h_{t-1}$ correctly encodes the stack state $q_{t-1}$. Due to the block structure of $U$, the product $U h_{t-1}$ generates a "dual candidate" vector:
-\[
-U h_{t-1} = \begin{pmatrix} U_{\text{push}} \\ U_{\text{pop}} \end{pmatrix} (\text{active half of } h_{t-1}) = \begin{pmatrix} h_{\text{push candidate}} \\ h_{\text{pop candidate}} \end{pmatrix}
-\]
-The behavior is then determined by the input $y_t$ \cite{286}:
-\begin{enumerate}
-    \item \textbf{Push Case ($y_t = \langle_i$):} The input matrix $V$ provides a $+1$ boost and the symbol identity $e_i$ to the top track. In the bottom track, the bias $b=-\mathbf{1}$ remains uncompensated. Applying $H(x > 0)$ yields:
+    \item \textbf{Fixed Recurrence Matrix $U \in \mathbb{R}^{2km \times 2km}$:} 
+    The matrix $U$ applies the shift operations to both tracks. It draws from whichever track was active in to prepare the next state's candidates:
     \[
-    h_t = \begin{pmatrix} H(h_{\text{push candidate}} + e_i + 1 - 1) \\ H(h_{\text{pop candidate}} + 0 - 1) \end{pmatrix} = \begin{pmatrix} h(\gamma_t) \\ \mathbf{0}_{km} \end{pmatrix}
+    U = \begin{pmatrix}
+        U_{\text{push}} & U_{\text{push}} \\
+        U_{\text{pop}} & U_{\text{pop}}
+    \end{pmatrix}
     \]
-    \item \textbf{Pop Case ($y_t = \rangle_i$):} $V$ provides the $+1$ boost only to the bottom track. The top track is suppressed by the bias, while the bottom track survives:
+    where $U_{\text{push}}$ and $U_{\text{pop}}$ are the block-shift matrices defined in 3d.
+
+    \item \textbf{Bias $b$ and Input Matrix $V$:} 
+    With $b = -\mathbf{1}_{2km}$, the matrix $V$ provides a $+1$ "boost" to activate the correct track based on the symbol order in Eq. (28):
     \[
-    h_t = \begin{pmatrix} H(h_{\text{push candidate}} + 0 - 1) \\ H(h_{\text{pop candidate}} + 1 - 1) \end{pmatrix} = \begin{pmatrix} \mathbf{0}_{km} \\ h(\gamma_t) \end{pmatrix}
+    V = \begin{pmatrix}
+        \mathbf{I}_{k} + \mathbf{1}_{k \times k} & \mathbf{0}_{k \times k} & \mathbf{1}_{k \times 1} \\
+        \mathbf{1}_{(m-1)k \times k} & \mathbf{0}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times 1} \\
+        \mathbf{0}_{k \times k} & \mathbf{1}_{k \times k} & \mathbf{1}_{k \times 1} \\
+        \mathbf{0}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times k} & \mathbf{1}_{(m-1)k \times 1}
+    \end{pmatrix}
     \]
-\end{enumerate}
-In both cases, $h_t$ correctly represents the new FSA state $q_t = \delta(q_{t-1}, y_t)$ in either the top or bottom track \cite{278}. This induction shows that the recurrence relation $h_t = H(Uh_{t-1} + Vo_{y_t} + b)$ is equivalent to the FSA transition function $\delta$, successfully simulating a bounded stack with a fixed recurrence matrix \cite{286}.
+
+\end{itemize}
+
+\textbf{Correspondence to Automaton $\mathcal{A}$:} \\
+The activation $H$ acts as a selector by only promoting entries that receive a boost from $V$:
+\begin{itemize}
+    \item \textbf{Push ($y_t \in \{\langle_1 \dots \langle_k\}$):} $V$ boosts the top track to activate the transition $[s \cdot \langle_n]$, while the bottom track remains at $-1$ and is zeroed.
+    \item \textbf{Pop ($y_t \in \{\rangle_1 \dots \rangle_k\}$):} $V$ boosts the bottom track to activate state $[s']$, suppressing the push track.
+    \item \textbf{EOS:} $V$ boosts both tracks to preserve the final stack configuration in the hidden state.
+\end{itemize}
 
 \end{subquestion}
 
-\begin{subquestion}
+\textbf{Part III. Recognition with an RNN}
 
-To decode the $2km$-dimensional hidden state from 3e using the encoding in Eq. (27), we define $E$ as a redundant block matrix:
-\[ E = \begin{pmatrix} E_{\text{track}} & E_{\text{track}} \end{pmatrix} \in \mathbb{R}^{(2k+1) \times 2km} \]
-where $E_{\text{track}} \in \mathbb{R}^{(2k+1) \times km}$ and $b' \in \mathbb{R}^{2k+1}$ are defined using parameter $\alpha > 0$:
+\begin{subquestion}{\textbf{Formal Recognition.}}
+
+To decode the $2km$-dimensional hidden state from 3e, we define the output matrix $E$ and bias vector $b'$ to compute the logits $Eh_{t-1} + b'$. We use the redundant block structure $E = \begin{pmatrix} E_{\text{track}} & E_{\text{track}} \end{pmatrix}$ since only one track of $h_{t-1}$ is active at a time. Using a real-valued parameter $\alpha > 0$, we define:
+
 \[
 b' = \begin{pmatrix} \alpha \cdot \mathbf{1}_k \\ \mathbf{0}_k \\ \alpha \end{pmatrix}, \quad 
 E_{\text{track}} = \begin{pmatrix} 
@@ -199,27 +180,103 @@ E_{\text{track}} = \begin{pmatrix}
 \end{pmatrix}
 \]
 
-\paragraph{Logit Logic for Recognition}
-The construction ensures logits $z_j = \alpha$ for valid symbols and $z_j \le 0$ for invalid ones:
+\textbf{Logit Reasoning for Support $\mathcal{L}_{\eta}(p_{\text{SM}})$:} \\
+The construction ensures logits $z_j \approx \alpha$ for valid continuations and $z_j \le 0$ for invalid ones:
 \begin{itemize}
     \item \textbf{Opening Brackets:} Use \textit{Veto Logic}. $b'$ grants default permission ($\alpha$), but $E_{\text{track}}$ subtracts $\alpha$ if the $m$-th stack slot is occupied, rejecting the symbol when the depth limit is reached.
     \item \textbf{Closing Brackets:} Use \textit{Permission Logic}. $b'$ is $0$ (default rejection). $E_{\text{track}}$ adds $\alpha$ only if the corresponding opening bracket $i$ matches the stack top (Slot 1).
     \item \textbf{EOS:} Uses \textit{Veto Logic}. $b'$ is $\alpha$, but $E_{\text{track}}$ subtracts $\alpha$ if any bracket exists in the stack, ensuring termination only for empty stacks.
 \end{itemize}
 
-\paragraph{Bounding $\alpha$}
-To satisfy $\eta$-truncated support ($p \ge \eta$), we consider the normalization constant $Z = \sum \exp(z_j)$. The worst-case (lowest probability) occurs at empty or partial stack depths where $k+1$ symbols are valid:
-\[ Z_{\text{max}} = (k+1)e^{\alpha} + k \cdot e^0 \]
-We require the probability of a valid symbol to exceed $\eta$:
+\textbf{Bounding the Parameter $\alpha$:} \\
+To ensure $p(y_t | y_{<t}) \ge \eta$ for acceptable symbols, we analyze the normalization constant $Z = \sum_{j} \exp(z_j)$. There are three relevant cases for $Z$:
+\begin{enumerate}
+    \item \textbf{Empty Stack ($d=0$):} $k$ opening brackets and EOS are valid. $Z_0 = (k+1)e^{\alpha} + k \cdot e^0$.
+    \item \textbf{Partial Stack ($1 \le d < m$):} $k$ opening brackets and $1$ matching closing bracket are valid. $Z_{\text{partial}} = (k+1)e^{\alpha} + (k-1) \cdot e^0 + e^{\alpha(1-d)}$.
+    \item \textbf{Full Stack ($d=m$):} Only $1$ matching closing bracket is valid. $Z_{\text{full}} = e^{\alpha} + 2k \cdot e^0$.
+\end{enumerate}
+The worst-case (largest $Z$) occurs when $d=0$ or $d=1$, where $Z_{\text{max}} = (k+1)e^{\alpha} + k$. To satisfy the $\eta$-truncated support requirement:
 \[ \frac{e^{\alpha}}{(k+1)e^{\alpha} + k} \ge \eta \implies e^{\alpha}(1 - \eta(k+1)) \ge \eta k \]
-Given $\eta < \frac{1}{k+1}$, we set the lower bound for $\alpha$ as:
+Given $\eta < \frac{1}{k+1}$, the lower bound for $\alpha$ as a function of $\eta$ is:
 \[ \alpha \ge \ln \left( \frac{\eta k}{1 - \eta(k+1)} \right) \]
-This ensures $\mathcal{L}_{\eta}(p_{\text{SM}}) = D(k,m)$ by squeezing all invalid continuations below the threshold.
+
+\textbf{Conclusion:} By setting $\alpha$ sufficiently high, all invalid continuations yield probabilities $p < \eta$, while valid ones maintain $p \ge \eta$, such that $\mathcal{L}_{\eta}(p_{\text{SM}}) = D(k,m)$.
 
 \end{subquestion}
 
-\begin{subquestion}
+\textbf{Part IV. Bonus: Reducing the Space Complexity}
+
+\begin{subquestion}{\textbf{Stack Transitions.}}
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{l|ccc}
+            \toprule
+            & $\stackseq_1 = \openBr{2}$ &
+            $\stackseq_2 = \openBr{1} \openBr{3} \openBr{1}$ &
+            $\stackseq_3 = \openBr{2} \openBr{1} \openBr{4}$ \\
+            \midrule
+            $\closeBr{1}$ & "reject" & $\openBr{1} \openBr{3}$ & "reject" \\
+            % \midrule
+            $\closeBr{4}$ & "reject" & "reject" & $\openBr{2} \openBr{1}$ \\
+            % \midrule
+            $\openBr{3}$ & $\openBr{2} \openBr{3}$ & "reject" & "reject" \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
 
 \end{subquestion}
+
+\begin{subquestion}{\textbf{RNN Parameters with Binary Encoding.}}
+
+Each bracket is assigned a unique binary encoding of length $L = \lceil \log_2 k \rceil + 1$. Maintaining the two-track logic from question (e), the hidden state dimension becomes $2Lm$.
+
+\textbf{Dimensions:}
+\begin{itemize}
+    \item $U \in \mathbb{R}^{2Lm \times 2Lm}$
+    \item $V \in \mathbb{R}^{2Lm \times (2k+1)}$
+    \item $b \in \mathbb{R}^{2Lm}$
+\end{itemize}
+
+\textbf{Parameter Changes:}
+\begin{itemize}
+    \item \textbf{Recurrence Matrix $U$}: The internal block-shift size used for push and pop operations  changes from $k \times k$ to $L \times L$.
+    \item \textbf{Input Matrix $V$}: The $k$ columns corresponding to opening brackets now encode the specific $L$-bit binary pattern $e_n$ for each bracket into the top slot of the push track, rather than acting as a sparse identity block.
+    \item \textbf{Bias $b$}: The vector length is reduced to $2Lm$ to match the compressed hidden state.
+\end{itemize}
+
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Formal Recognition with Binary Encoding}.}
+
+We define the output matrix $E = \begin{pmatrix} E_{\text{track}} & E_{\text{track}} \end{pmatrix} \in \mathbb{R}^{(2k+1) \times 2Lm}$ to decode the binary hidden state. Each track $E_{\text{track}} \in \mathbb{R}^{(2k+1) \times Lm}$ maps the $m$ stack slots of $L = \lceil \log_2 k \rceil + 1$ bits to symbol logits.
+
+Let $e_n \in \{0, 1\}^L$ be the binary representation of bracket type $n$. We define $|e_n|$ as the number of set bits (1s) in that encoding. Using a parameter $\alpha > 0$, the bias $b' \in \mathbb{R}^{2k+1}$ and matrix $E_{\text{track}}$ are defined as:
+
+\[
+b' = \begin{pmatrix} 
+\alpha \cdot \mathbf{1}_k \\ 
+\alpha(1 - |e_1|, \dots, 1 - |e_k|)^\top \\ 
+\alpha 
+\end{pmatrix}, \quad 
+E_{\text{track}} = \begin{pmatrix} 
+\mathbf{0}_{k \times (m-1)L} & -\alpha \cdot \mathbf{1}_{k \times L} \\
+\alpha \cdot P & \mathbf{0}_{k \times (m-1)L} \\
+-\alpha \cdot \mathbf{1}_{1 \times mL}
+\end{pmatrix}
+\]
+
+Where $P \in \{1, -1\}^{k \times L}$ is a pattern matrix such that $P_{n,i} = 1$ if the $i$-th bit of $e_n$ is 1, and $P_{n,i} = -1$ otherwise.
+
+\paragraph{Logit Reasoning for Support $\mathcal{L}_{\eta}(p_{\text{SM}})$:}
+Following the symbol order in Eq. (28), this construction ensures logits $z_j = \alpha$ for valid symbols and $z_j \le 0$ for invalid ones:
+\begin{itemize}
+    \item \textbf{Opening Brackets ($\langle_1, \dots, \langle_k$):} Uses \textbf{Veto Logic}. The bias grants default permission ($\alpha$). If any bit in the $m$-th stack slot is 1 (depth limit reached), the $-\alpha$ terms in $E_{\text{track}}$ cancel the permission.
+    \item \textbf{Closing Brackets ($\rangle_1, \dots, \rangle_k$):} Uses \textbf{Pattern Matching Logic}. The logit for bracket $n$ is $z = \alpha(1 - |e_n|) + \alpha(\text{matched bits} - \text{mismatched bits})$. If the top slot perfectly matches $e_n$, the logit is exactly $\alpha$. Any mismatch results in $z \le 0$.
+    \item \textbf{EOS:} Uses \textbf{Veto Logic}. The bias is $\alpha$. If any bit in any of the $m$ stack slots is 1, the $-\alpha$ entries in $E_{\text{track}}$ veto the logit, ensuring the string terminates only on an empty stack.
+\end{itemize}
+
+\end{subquestion}
+
 
 \end{question}
