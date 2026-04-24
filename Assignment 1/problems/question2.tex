@@ -1,143 +1,139 @@
 \begin{question}{Properties of Finite-state Language Models}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Mean String Length Algorithm}}
 
-\subsubsection*{Approach}
+To compute the mean string length, we construct a duplicated automaton $\mathcal{A}_{dup} = (\Sigma, Q_{dup}, \delta_{dup}, \lambda_{dup}, \rho_{dup})$.
 
-We define the duplicated automaton $\mathcal{A}_{dup} = (\Sigma, Q_{dup}, \delta_{dup}, \lambda_{dup}, \rho_{dup})$ as follows:
-
-\begin{description}
-
-    \item[$\Sigma$:]
-    The alphabet remains unchanged. The duplicated automaton reads the exact same symbols as the original one.
-
-    \item[$Q_{dup}$:]
-    The state space is doubled to create two parallel layers. We define this mathematically as $Q_{dup} = Q \times \{1, 2\}$, where $1$ and $2$ represent the layer numbers.
-
-    \item[$\delta_{dup}$:]
-    For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, we construct the transitions in $\mathcal{A}_{dup}$ as follows:
-
-    \begin{itemize}
-        \item \textbf{Layer 1 Traversal:} A transition $(q, 1) \xrightarrow{a, w} (q', 1)$.
-        \item \textbf{Layer 2 Traversal:} A transition $(q, 2) \xrightarrow{a, w} (q', 2)$.
-        \item \textbf{The One-Way Bridge:} A transition $(q, 1) \xrightarrow{a, w} (q', 2)$.
-    \end{itemize}
-
-    \item[$\lambda_{dup}$:]
-    We force all paths to begin in the first layer. We do this by keeping the original initial weights for Layer 1 states and setting the initial weights for all Layer 2 states to $0$.
-
-    \item[$\rho_{dup}$:]
-    We force all paths to finish in the second layer. We do this by keeping the original final weights for Layer 2 states and setting the final weights for all Layer 1 states to $0$.
-
-\end{description}
-
-To find the mean string length under $p_{LM}$, we simply execute the \texttt{allsum} algorithm from the notes on $\mathcal{A}_{dup}$.
-
-\subsubsection*{Intuition}
-
-In our two-layer automaton, any path $\pi$ from the original automaton must cross the one-way bridge to Layer 2 exactly once. Because the path has $|\pi|$ steps, there are $|\pi|$ different opportunities to make this jump. 
-
-Therefore, the \texttt{allsum} algorithm discovers $|\pi|$ distinct routes for the original path. By adding up all valid routes, the algorithm naturally adds the path's probability to the total sum $|\pi|$ times, seamlessly computing $\text{Probability} \times \text{Length}$ to find the mean.
-
-\subsubsection*{Runtime}
-
-The duplicated automaton $\mathcal{A}_{dup}$ has twice as many states as the original automaton. If we plug this new size into the runtime for the algorithm from the notes, we get:
-$$ \mathcal{O}((2|Q|)^3) = \mathcal{O}(8|Q|^3) $$
-
-We can drop the constant multiplier, because it doesn't change the fundamental growth rate of the algorithm. This leaves us with our final time complexity:
-$$ \mathcal{O}(|Q|^3) $$
-
-\end{subquestion}
-
-\begin{subquestion}
-
-\subsubsection*{Approach}
-
-To compute the variance, we use the identity $\text{Var}(X) = E[X^2] - E[X]^2$. Having already determined $E[X]$ via the duplicated automaton, we now construct a three-layered automaton $\mathcal{A}_{tri} = (\Sigma, Q_{tri}, \delta_{tri}, \lambda_{tri}, \rho_{tri})$ to find $E[X^2]$.
-
-The state space is defined as $Q_{tri} = Q \times \{1, 2, 3\}$.
-
-For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, the weights in $\mathcal{A}_{tri}$ are assigned as follows:
-
-\subsubsection*{Transitions of $\mathcal{A}_{tri}$}
-
-For every original transition $q \xrightarrow{a, w} q'$ in $\mathcal{A}$, we define the following transitions in $\mathcal{A}_{tri}$:
-
+\subsubsection*{1. Construction of $\mathcal{A}_{dup}$}
 \begin{itemize}
-    \item $(q, i) \xrightarrow{a, w} (q', i)$ for $i \in \{1, 2, 3\}$
-    \item $(q, 1) \xrightarrow{a, w} (q', 3)$
-    \item $(q, 1) \xrightarrow{a, 2w} (q', 2)$
-    \item $(q, 2) \xrightarrow{a, w} (q', 3)$
+    \item \textbf{States:} $Q_{dup} = Q \times \{1, 2\}$, which implies $|Q_{dup}| = 2|Q|$.
+    \item \textbf{Transitions:} For every original transition $q \xrightarrow{y/w} q'$ in $\mathcal{A}$:
+    \begin{itemize}
+        \item \textbf{Layer 1:} $(q, 1) \xrightarrow{y/w} (q', 1)$ (Maintains the path in the first layer).
+        \item \textbf{Layer 2:} $(q, 2) \xrightarrow{y/w} (q', 2)$ (Maintains the path in the second layer).
+        \item \textbf{Bridge:} $(q, 1) \xrightarrow{y/w} (q', 2)$ (A one-way bridge that represents counting a transition).
+    \end{itemize}
+    \item \textbf{Initial/Final Weights:}
+    \begin{itemize}
+        \item $\lambda_{dup} = \begin{pmatrix} \lambda \\ \mathbf{0} \end{pmatrix}$ (The model must start in Layer 1).
+        \item $\rho_{dup} = \begin{pmatrix} \mathbf{0} \\ \rho \end{pmatrix}$ (The model must finish in Layer 2).
+    \end{itemize}
 \end{itemize}
 
-By running \texttt{allsum} on $\mathcal{A}_{tri}$, we obtain $E[X^2]$.
+\subsubsection*{2. Algorithm}
+We apply the \texttt{allsum} algorithm to $\mathcal{A}_{dup}$.
 
-\subsubsection*{Intuition}
+\textbf{Intuition:} Any path $\pi$ of length $n$ in the original automaton now has $n$ corresponding paths in $\mathcal{A}_{dup}$. Each path must cross the bridge from Layer 1 to Layer 2 at exactly one of the $n$ possible transitions. Consequently, the string $y$ contributes its probability $p_{LM}(y)$ to the total sum $|y|$ times, effectively computing $\sum p_{LM}(y)|y| = \mu$.
 
-The second moment $E[X^2]$ is the expectation of the squared path length, $\sum p(\pi) \cdot |\pi|^2$. By expanding the square as a double summation, $|\pi|^2 = \sum_{i} \sum_{j} 1$, we see that we must account for every possible pair of steps in a path. 
+\subsubsection*{3. Runtime Analysis}
+The runtime depends on the state space of the $\mathcal{A}_{dup}$. 
+\begin{itemize}
+    \item \textbf{State Space}: The construction yields $|Q_{dup}| = 2|Q|$.
+    \item \textbf{Algorithm Complexity}: Per the course notes, the \texttt{allsum} algorithm for a PFSA with $N$ states runs in $\mathcal{O}(N^3)$.
+    \item \textbf{Total Time}: Substituting $N = 2|Q|$, we obtain $\mathcal{O}((2|Q|)^3) = \mathcal{O}(8|Q|^3)$, which simplifies to $\mathcal{O}(|Q|^3)$.
+\end{itemize}
 
-The three layers facilitate this by acting as a "selection" mechanism:
-\begin{enumerate}
-    \item The path starts in Layer 1.
-    \item It moves to Layer 2 when the first step of a pair is "selected."
-    \item It moves to Layer 3 when the second step is "selected."
-\end{enumerate}
-The double-step bridge ensures that steps can be paired with themselves.
+\end{subquestion}
 
-\subsubsection*{Weighting Logic}
+\begin{subquestion}{\textbf{Variance of String Length Algorithm}}
 
-By using these weights, the \texttt{allsum} result for $\mathcal{A}_{tri}$ yields the second moment $E[X^2]$. Specifically, for a path $\pi$, the weighting ensures that the off-diagonal terms of the expansion $(\sum 1)^2$ are counted twice and the diagonal terms are counted once, successfully yielding $|\pi|^2$.
+To compute the variance $\sigma^2 = E[|y|^2] - \mu^2$, we use the mean $\mu$ obtained in Question 2a and construct a three-layered automaton $\mathcal{A}_{tri} = (\Sigma, Q_{tri}, \delta_{tri}, \lambda_{tri}, \rho_{tri})$ to determine the second moment $E[|y|^2]$.
 
-\subsubsection*{Runtime}
+\subsubsection*{1. Construction of $\mathcal{A}_{tri}$}
+The state space is defined as $Q_{tri} = Q \times \{1, 2, 3\}$, resulting in $|Q_{tri}| = 3|Q|$. For every original transition $q \xrightarrow{y/w} q'$ in $\mathcal{A}$, we define the following transitions in $\mathcal{A}_{tri}$:
+\begin{itemize}
+    \item \textbf{Layer Maintenance:} $(q, i) \xrightarrow{y/w} (q', i)$ for $i \in \{1, 2, 3\}$.
+    \item \textbf{Ordered Pair Bridges:} 
+    \begin{itemize}
+        \item $(q, 1) \xrightarrow{y/w} (q', 2)$ (Selecting the first index $i$).
+        \item $(q, 2) \xrightarrow{y/w} (q', 3)$ (Selecting the second index $j$, where $i < j$).
+    \end{itemize}
+    \item \textbf{Self-Pairing Bridge:} $(q, 1) \xrightarrow{y/w} (q', 3)$ (Selecting $i = j$ in a single step).
+\end{itemize}
 
-The state space for $\mathcal{A}_{tri}$ is $3|Q|$. The time complexity for the \texttt{allsum} algorithm on this expanded graph is:
-$$\mathcal{O}((3|Q|)^3) = \mathcal{O}(27|Q|^3)$$
+\textbf{Initial and Final Weights:}
+Paths must begin in Layer 1 and terminate in Layer 3:
+\begin{itemize}
+    \item $\lambda_{tri} = [\lambda^\top, \mathbf{0}^\top, \mathbf{0}^\top]^\top$
+    \item $\rho_{tri} = [\mathbf{0}^\top, \mathbf{0}^\top, \rho^\top]^\top$
+\end{itemize}
 
-Dropping the constant coefficient, the final complexity remains:
-$$\mathcal{O}(|Q|^3)$$
+\subsubsection*{2. Algorithm and Intuition}
+We execute \texttt{allsum} on $\mathcal{A}_{tri}$ and denote the result as $Z_{tri}$. 
+
+\textbf{Intuition:} The second moment $E[|y|^2]$ represents the expected number of all pairs of indices $(i, j)$ in a string. Our construction counts all pairs $\{i, j\}$ where $i \le j$:
+\begin{itemize}
+    \item The sequence $L_1 \to L_2 \to L_3$ counts combinations where $i < j$, yielding $\binom{|y|}{2}$ paths.
+    \item The $L_1 \to L_3$ bridge counts cases where $i = j$, yielding $|y|$ paths.
+\end{itemize}
+The total paths for a string of length $n$ is $\binom{n}{2} + n = \frac{n^2 + n}{2}$. Thus, the \texttt{allsum} result relates to the moments as:
+\begin{equation}
+    Z_{tri} = E\left[ \frac{|y|^2 + |y|}{2} \right] = \frac{1}{2}E[|y|^2] + \frac{1}{2}\mu
+\end{equation}
+
+\subsubsection*{3. Final Calculation}
+Using $Z_{tri}$ and the previously computed $\mu$, we isolate the second moment and variance:
+\begin{itemize}
+    \item \textbf{Second Moment:} $E[|y|^2] = 2Z_{tri} - \mu$
+    \item \textbf{Variance:} $\sigma^2 = (2Z_{tri} - \mu) - \mu^2$
+\end{itemize}
+
+\subsubsection*{4. Runtime Analysis}
+The complexity is dominated by the \texttt{allsum} algorithm on $N = 3|Q|$ states:
+\begin{equation}
+    \mathcal{O}(N^3) = \mathcal{O}((3|Q|)^3) = \mathcal{O}(27|Q|^3) \to \mathcal{O}(|Q|^3)
+\end{equation}
 
 \end{subquestion}
 
 \begin{subquestion}
 
-To prove that $H(p_{LM}) = \lambda^{\top}(I - T)^{-1}\xi$, we utilize the provided hints regarding the local transition entropy and the chain rule for entropy[cite: 173, 175, 183].
+\subsection*{Entropy Calculation}
 
-\subsubsection*{1. Defining the Variables}
-Following the suggestion in the prompt, let $\Pi_q$ be a random variable ranging over paths in $\mathcal{A}$ starting in state $q$[cite: 179, 180]. Let $\tau_q$ be a random variable over the outgoing transitions from $q$ or termination at $q$[cite: 179, 180]. 
-By definition, the local entropy at state $q$, denoted $\xi_q$, is[cite: 176]:
-\begin{equation}
-    \xi_q = H(\tau_q) = -\sum_{q \xrightarrow{y/w} q'} w \log w - \rho_q \log \rho_q
-\end{equation}
+To prove that $H(p_{LM}) = \lambda^{\top}(I-T)^{-1}\xi$, we use the assumption that the PFSA $\mathcal{A}$ is deterministic and apply the chain rule of entropy.
 
-\subsubsection*{2. Recursive Entropy Decomposition}
-The entropy of a path starting at state $q$ can be decomposed using the chain rule of entropy: $H(X, Y) = H(X) + H(Y|X)$[cite: 183, 184]. For a path $\Pi_q$, the "first step" is $\tau_q$. Since the automaton is deterministic, the next state $q'$ is uniquely determined by the choice of transition in $\tau_q$[cite: 172]. Thus:
+\subsubsection*{1. Global Entropy Definition}
+The entropy of the language model $H(p_{LM})$ is the expected uncertainty over all strings $y \in \Sigma^*$. In a deterministic PFSA, every string corresponds to a unique path. Let $H(\Pi_q)$ denote the entropy of all paths starting from a specific state $q$. The total entropy of the model, starting from the initial distribution $\lambda$, is:
 \begin{equation}
-    H(\Pi_q) = H(\tau_q) + \sum_{q \xrightarrow{y/w} q'} \mathbb{P}(\tau_q = q \xrightarrow{y/w} q') H(\Pi_{q'})
+    H(p_{LM}) = \sum_{q \in Q} \lambda_q H(\Pi_q) = \lambda^{\top} H
 \end{equation}
-Substituting $\xi_q$ and the transition weights $w$[cite: 182], we obtain:
+where $H \in \mathbb{R}^{|Q|}$ is the vector of path entropies for each state.
+
+\subsubsection*{2. Decomposition via the Chain Rule}
+Using the hint, we apply the chain rule of entropy to the path random variable $\Pi_q$. We decompose the path into the immediate next step $\tau_q$ (transition or termination) and the remaining path:
 \begin{equation}
-    H(\Pi_q) = \xi_q + \sum_{q \xrightarrow{y/w} q'} w H(\Pi_{q'})
+    H(\Pi_q) = H(\tau_q) + \sum_{x} P(\tau_q = x) H(\text{future path} \mid \tau_q = x)
 \end{equation}
 
-\subsubsection*{3. Matrix Formulation and Solution}
-Let $\mathbf{h} \in \mathbb{R}^{|Q|}$ be the vector of path entropies where $\mathbf{h}_q = H(\Pi_q)$. Using the transition matrix $T$ defined in Eq. (15) [cite: 141, 142, 145], we can rewrite the recursive relation in matrix form:
+\subsubsection*{3. Substitution of Local Components}
+\begin{itemize}
+    \item \textbf{Local Uncertainty}: The entropy of the first step $H(\tau_q)$ is the uncertainty of choosing a symbol $y$ with weight $w$ or terminating with weight $\rho_q$. This is exactly the definition of $\xi_q$:
+    \begin{equation}
+        H(\tau_q) = \xi_q = -\sum_{q \xrightarrow{y/w} q'} w \log w - \rho_q \log \rho_q
+    \end{equation}
+    \item \textbf{Expected Future Entropy}: Because the PFSA is deterministic, selecting a symbol $y$ results in a transition to a single next state $q'$ with $100\%$ certainty. Thus, the conditional entropy $H(\text{future path} \mid \tau_q)$ is simply the total entropy $H(\Pi_{q'})$ of the path starting from that successor state.
+\end{itemize}
+
+\subsubsection*{4. Linear System Formulation}
+Substituting these into our decomposition yields a recursive equation for each state $q$:
 \begin{equation}
-    \mathbf{h} = \xi + T\mathbf{h}
+    H(\Pi_q) = \xi_q + \sum_{q'} T_{q,q'} H(\Pi_{q'})
 \end{equation}
-Rearranging the terms gives $(I - T)\mathbf{h} = \xi$. Since all eigenvalues of $T$ have magnitude less than 1, the matrix $(I - T)$ is invertible[cite: 146]:
+In matrix-vector form, this recursion is represented as:
 \begin{equation}
-    \mathbf{h} = (I - T)^{-1}\xi
+    H = \xi + TH \implies (I - T)H = \xi
 \end{equation}
 
-\subsubsection*{4. Conclusion}
-The total entropy of the language model $H(p_{LM})$ is the expected entropy of paths starting from the initial state distribution $\lambda$[cite: 140, 147, 152]:
+\subsubsection*{5. Final Derivation}
+Since all eigenvalues of $T$ have magnitude less than $1$, $(I - T)$ is invertible. Solving for $H$:
 \begin{equation}
-    H(p_{LM}) = \sum_{q \in Q} \lambda_q H(\Pi_q) = \lambda^{\top}\mathbf{h}
+    H = (I - T)^{-1} \xi
 \end{equation}
-Substituting the expression for $\mathbf{h}$ yields the desired result[cite: 175]:
+Finally, substituting this back into our initial expression for $H(p_{LM})$:
 \begin{equation}
-    H(p_{LM}) = \lambda^{\top}(I - T)^{-1}\xi
+    H(p_{LM}) = \lambda^{\top} (I - T)^{-1} \xi
 \end{equation}
+This matches the required formula in Equation (19).
 
 \end{subquestion}
 
