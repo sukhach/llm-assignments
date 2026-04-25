@@ -1,0 +1,17 @@
+\section{Cheat Sheet}
+
+\subsection{Liner Algebra}
+
+% --- Cross-Covariance Matrix Cheat Sheet ---
+
+% Formal Definition
+$$\Sigma_{X,\tilde{Z}} = \mathbb{E}\left[(X - \mathbb{E}[X])(\tilde{Z} - \mathbb{E}[\tilde{Z}])^\top\right]$$
+
+% Computational Expansion
+$$\Sigma_{X,\tilde{Z}} = \mathbb{E}[X\tilde{Z}^\top] - \mathbb{E}[X]\mathbb{E}[\tilde{Z}]^\top$$
+
+% Individual Entry Definition (from Source 88)
+$$(\Sigma_{X,\tilde{Z}})_{i,j} = \text{Cov}(X_i, \tilde{Z}_j)$$
+
+% Linear Guarding Property (from Source 89)
+$$X \text{ linearly guards } Z \iff \Sigma_{X,\tilde{Z}} = 0$$

@@ -1,90 +1,111 @@
 \begin{question}{Representation Surgery}
 
-\begin{subquestion}
-No. Definition 2 only restricts affine predictors. A non-linear classifier may still achieve a loss lower than the trivially attainable loss by capturing dependencies that a linear model cannot.
+\begin{subquestion}{\textbf{Linear vs. Non-Linear Classifier}}
+
+No. While $X$ linearly guarding $Z$ implies that no affine (linear) predictor can outperform the trivially attainable loss $L_{\tau}$, it does not restrict non-linear classifiers.
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Proof of Linear Guardedness}}
+
+To prove that $X$ linearly guards $Z$, we must show that for any affine predictor $f(x) = Ax + b$, the expected loss satisfies $\mathbb{E}_{X,Z}[\mathcal{L}(f(X), Z)] \ge L_{\tau}$.
+
+By the law of total expectation, we decompose the global loss into class-conditional expectations:
+$$\mathbb{E}_{X,Z}[\mathcal{L}(AX + b, Z)] = \sum_{i=1}^{k} \mathbb{P}(Z=i) \mathbb{E}_{X|Z=i} [\mathcal{L}(AX + b, Z=i)]$$
+
+The cross-entropy loss function $\mathcal{L}(y, Z)$ is convex with respect to its first argument. Applying Jensen's Inequality to each class-conditional expectation yields:
+$$\mathbb{E}_{X|Z=i} [\mathcal{L}(AX + b, Z=i)] \ge \mathcal{L}(\mathbb{E}_{X|Z=i}[AX + b], Z=i)$$
+
+Using the linearity of expectation and substituting the given condition $\mathbb{E}[X|Z=i] = \mathbb{E}[X]$:
+$$\mathcal{L}(\mathbb{E}_{X|Z=i}[AX + b], Z=i) = \mathcal{L}(A\mathbb{E}[X|Z=i] + b, Z=i) = \mathcal{L}(A\mathbb{E}[X] + b, Z=i)$$
+
+Let $b' = A\mathbb{E}[X] + b \in \mathbb{R}^k$. Note that $b'$ is a constant vector that does not depend on the specific class index $i$. Recombining the terms into the global expectation:
+$$\sum_{i=1}^{k} \mathbb{P}(Z=i) \mathcal{L}(b', Z=i) = \mathbb{E}_Z[\mathcal{L}(b', Z)]$$
+
+By Definition 1, $L_{\tau}$ is the infimum over all constant predictors $b \in \mathbb{R}^k$. Therefore:
+$$\mathbb{E}_Z[\mathcal{L}(b', Z)] \ge \inf_{b \in \mathbb{R}^k} \mathbb{E}_Z [\mathcal{L}(b, Z)] = L_{\tau}$$
+
+This confirms that no affine classifier can achieve a loss lower than the trivially attainable loss, thus $X$ linearly guards $Z$.
+\end{subquestion}
+
+\begin{subquestion}{\textbf{Gradient of Cross-Entropy Loss}}
+
+\subsubsection*{Boundedness of Partial Derivatives}
+
+To prove that the partial derivatives are bounded, we first calculate the gradient of the loss $\mathcal{L}(y, Z=i)$ with respect to each component $y_j$ of the logit vector $y$.
+
+Using the form $\mathcal{L}(y, Z=i) = -y_i + \ln\left(\sum_{m=1}^{k} \exp(y_m)\right)$, we compute the partial derivative $\frac{\partial \mathcal{L}}{\partial y_j}$:
+$$\frac{\partial \mathcal{L}}{\partial y_j} = \frac{\partial}{\partial y_j} \left[ -y_i + \ln\left(\sum_{m=1}^{k} \exp(y_m)\right) \right]$$
+
+Applying the chain rule to the logarithm term:
+$$\frac{\partial \mathcal{L}}{\partial y_j} = -\mathbb{1}\{j=i\} + \frac{1}{\sum_{m=1}^{k} \exp(y_m)} \cdot \exp(y_j)$$
+$$\frac{\partial \mathcal{L}}{\partial y_j} = \text{softmax}(y)_j - \mathbb{1}\{j=i\}$$
+
+Where $\mathbb{1}\{j=i\}$ is the indicator function (1 if $j=i$, 0 otherwise). 
+
+By the definition of the softmax function, $0 < \text{softmax}(y)_j < 1$ for all $j \in \{1, \dots, k\}$. Since the indicator function is either $0$ or $1$, the partial derivative is bounded:
+$$-1 < \frac{\partial \mathcal{L}}{\partial y_j} < 1$$
+Thus, all partial derivatives of the cross-entropy loss with respect to $y$ are bounded.
+
+\subsubsection*{Symmetric Partial Derivatives for Incorrect Classes}
+
+We want to show that for any $j_1, j_2 \neq i$, the partial derivative of the loss with respect to $y_i$ is identical. 
+
+Using the gradient derived in the previous sub-question:
+$$\frac{\partial \mathcal{L}(y, Z=k)}{\partial y_i} = \text{softmax}(y)_i - \mathbb{1}\{i=k\}$$
+
+Let us evaluate this for the two cases where the ground truth concept $Z$ is $j_1$ and $j_2$:
+
+1. For $Z = j_1$: 
+Since $j_1 \neq i$ by assumption, the indicator function $\mathbb{1}\{i=j_1\} = 0$. Thus:
+$$\frac{\partial}{\partial y_i} \mathcal{L}(y, Z=j_1) = \text{softmax}(y)_i - 0 = \text{softmax}(y)_i$$
+
+2. For $Z = j_2$: 
+Similarly, since $j_2 \neq i$ by assumption, the indicator function $\mathbb{1}\{i=j_2\} = 0$. Thus:
+$$\frac{\partial}{\partial y_i} \mathcal{L}(y, Z=j_2) = \text{softmax}(y)_i - 0 = \text{softmax}(y)_i$$
+
+Since both expressions evaluate to $\text{softmax}(y)_i$, we have:
+$$\frac{\partial}{\partial y_i} \mathcal{L}(y, Z=j_1) = \frac{\partial}{\partial y_i} \mathcal{L}(y, Z=j_2)$$
+
+Furthermore, because the softmax output $\text{softmax}(y)_i = \frac{\exp(y_i)}{\sum \exp(y_m)}$ is always strictly positive, this common derivative is non-zero ($\ne 0$), as required.
+
 \end{subquestion}
 
 \begin{subquestion}
-
-\subsubsection*{Question 1(b): Proof of Linear Guardedness}
-
-Using Jensen's Inequality:
-\[ \mathbb{E}[\mathcal{L}(f(\X), i) \mid Z=i] \geq \mathcal{L}(\mathbb{E}[f(\X) \mid Z=i], i) \]
-
-Introduce affine formula:
-\begin{align*}
-\mathbb{E}[\mathcal{L}(f(\X), i) \mid Z=i] &\geq \mathcal{L}(\mathbb{E}[\mathbf{Ax} + \mathbf{b} \mid Z=i], i) \\
-&\geq \mathcal{L}(\mathbf{A}\mathbb{E}[\X \mid Z=i] + \mathbf{b} \mid Z=i], i) \\
-\mathbb{E}[\mathcal{L}(f(\X)), Z] &\geq \mathcal{L}(\mathbf{b'}) \\
-&\geq L_{\tau}
-\end{align*}
-
-According to Definition 2, this is the exact requirement for linear guardedness.
-
+Skipped.
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Equivalence of Mean Equality and Zero Cross-Covariance}}
 
-\begin{align*}
-\mathcal{L}(y, Z=i) &= -\ln \left( \frac{\exp(y_i)}{\sum_{j=1}^{k} \exp(y_j)} \right) \\
-&= -y_i + \ln \left( \sum_{j=1}^{k} \exp(y_j) \right)
-\end{align*}
+We aim to prove that $\mathbb{E}[X|Z=i] = \mathbb{E}[X]$ for all $i \in \{1, \dots, k\}$ if and only if $\Sigma_{X,\tilde{Z}} = 0$, given $\mathbb{P}(Z=i) \neq 0$.
 
-Case A: When $i = j$ (We are changing the true class score)
+\subsubsection*{Forward Direction: $\mathbb{E}[X|Z=i] = \mathbb{E}[X] \implies \Sigma_{X,\tilde{Z}} = 0$}
+Recall the computational formula for cross-covariance:
+$$\Sigma_{X,\tilde{Z}} = \mathbb{E}[X\tilde{Z}^\top] - \mathbb{E}[X]\mathbb{E}[\tilde{Z}]^\top$$
+Using the law of total expectation on the first term:
+$$\mathbb{E}[X\tilde{Z}^\top] = \sum_{i=1}^k \mathbb{P}(Z=i) \mathbb{E}[X\tilde{Z}^\top | Z=i]$$
+Given that $\tilde{Z}$ is a one-hot encoding, $\tilde{Z} | Z=i$ is the constant vector $e_i$. Thus:
+$$\mathbb{E}[X\tilde{Z}^\top] = \sum_{i=1}^k \mathbb{P}(Z=i) \mathbb{E}[X | Z=i] e_i^\top$$
+Substituting the assumption $\mathbb{E}[X|Z=i] = \mathbb{E}[X]$:
+$$\mathbb{E}[X\tilde{Z}^\top] = \mathbb{E}[X] \sum_{i=1}^k \mathbb{P}(Z=i) e_i^\top = \mathbb{E}[X] \mathbb{E}[\tilde{Z}]^\top$$
+Therefore, $\Sigma_{X,\tilde{Z}} = \mathbb{E}[X]\mathbb{E}[\tilde{Z}]^\top - \mathbb{E}[X]\mathbb{E}[\tilde{Z}]^\top = 0$.
 
-\begin{align*}
-\frac{\partial \mathcal{L}(y, Z=i)}{\partial y_i} &= \frac{\partial}{\partial y_i} \left[ -y_i + \ln\left(\sum_{k=1}^k \exp(y_k)\right) \right] \\
-&= -1 + \frac{1}{\sum_{k=1}^k \exp(y_k)} \cdot \exp(y_i) \\
-&= \frac{\exp(y_i)}{\sum_{k=1}^k \exp(y_k)} - 1 \\
-&= \text{softmax}(y)_i - 1
-\end{align*}
-
-Case B: When $i \neq j$ (We are changing a wrong class score)
-
-\begin{align*}
-\frac{\partial \mathcal{L}(y, Z=j)}{\partial y_i} &= \frac{\partial}{\partial y_i} \left[ -y_j + \ln\left(\sum_{k=1}^k \exp(y_k)\right) \right] \\
-&= 0 + \frac{1}{\sum_{k=1}^k \exp(y_k)} \cdot \exp(y_i) \\
-&= \text{softmax}(y)_i
-\end{align*}
-
+\subsubsection*{Backward Direction: $\Sigma_{X,\tilde{Z}} = 0 \implies \mathbb{E}[X|Z=i] = \mathbb{E}[X]$}
+If $\Sigma_{X,\tilde{Z}} = 0$, then for each class $i$ (corresponding to the $i^{th}$ column of the matrix):
+$$\mathbb{E}[X\tilde{Z}_i] - \mathbb{E}[X]\mathbb{E}[\tilde{Z}_i] = 0$$
+Since $\tilde{Z}_i$ is an indicator variable $\mathbb{1}\{Z=i\}$, we have $\mathbb{E}[\tilde{Z}_i] = \mathbb{P}(Z=i)$ and $\mathbb{E}[X\tilde{Z}_i] = \mathbb{P}(Z=i)\mathbb{E}[X|Z=i]$. Substituting these:
+$$\mathbb{P}(Z=i)\mathbb{E}[X|Z=i] - \mathbb{E}[X]\mathbb{P}(Z=i) = 0$$
+Factoring out $\mathbb{P}(Z=i)$:
+$$\mathbb{P}(Z=i) \left( \mathbb{E}[X|Z=i] - \mathbb{E}[X] \right) = 0$$
+Since $\mathbb{P}(Z=i) \neq 0$, it must hold that $\mathbb{E}[X|Z=i] = \mathbb{E}[X]$ for all $i$.
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Null Space Condition for Linear Guarding}}
 
-\end{subquestion}
-
-\begin{subquestion}
-
-\subsubsection*{\SigXZ = \mathbf{0} \implies \mathbb{E}[\X|Z=i] = \mathbb{E}[\X]}
-
-\subsubsection*{Reverse Direction: $\Sigma_{X,\tilde{Z}} = \mathbf{0} \implies \mathbb{E}[X|Z=i] = \mathbb{E}[X]$}
-
-Assume the cross-covariance matrix is the zero matrix: $\Sigma_{X,\tilde{Z}} = \mathbf{0}$. 
-Using the definition $\Sigma_{X,\tilde{Z}} = \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top]$, we have:
-\[ \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top] = \mathbf{0} \]
-
-We examine the $i$-th column of this matrix. Multiplying the matrix by the $i$-th basis vector $\mathbf{e}_i$ isolates the $i$-th column:
-\[ \mathbb{E}[(X - \mathbb{E}[X])\tilde{Z}^\top] \mathbf{e}_i = \mathbf{0} \]
-
-Since $\tilde{Z}^\top \mathbf{e}_i$ is an indicator variable that equals $1$ if $Z=i$ and $0$ otherwise, the expectation becomes:
-\[ \mathbb{E}[(X - \mathbb{E}[X]) \cdot \mathbb{I}(Z=i)] = \mathbf{0} \]
-
-Using the definition of conditional expectation, this is equivalent to:
-\[ \mathbb{P}(Z=i) \mathbb{E}[X - \mathbb{E}[X] \mid Z=i] = \mathbf{0} \]
-
-Given the assumption that $\mathbb{P}(Z=i) > 0$, we can divide by the probability:
-\[ \mathbb{E}[X \mid Z=i] - \mathbb{E}[X] = \mathbf{0} \]
-\[ \mathbb{E}[X \mid Z=i] = \mathbb{E}[X] \]
-
-This proves that if the cross-covariance is zero, the class-conditional means must equal the global mean for all classes $i$.
-
-\subsubsection*{\mathbb{E}[\X|Z=i] = \mathbb{E}[\X] \implies \SigXZ = \mathbf{0}}
-
-\begin{align*}
-\text{Col}_i(\Sigma_{X, \tilde{Z}}) &= (\mathbb{E}[X \mid Z=i] - \mathbb{E}[X]) \mathbb{P}(Z=i) \\
-&= 0
-\end{align*}
-
+A representation $r(X)$ linearly guards $Z$ if and only if the cross-covariance $\text{Cov}(r(X), \tilde{Z}) = 0$. Using the affine map $r(X) = PX + b$, we apply the linearity of covariance:
+$$\text{Cov}(PX + b, \tilde{Z}) = \text{Cov}(PX, \tilde{Z}) + \text{Cov}(b, \tilde{Z})$$
+Since $b$ is a constant, $\text{Cov}(b, \tilde{Z}) = 0$. By the properties of the covariance operator for matrices:
+$$\text{Cov}(PX, \tilde{Z}) = P \text{Cov}(X, \tilde{Z}) = P \Sigma_{X,\tilde{Z}}$$
+Therefore, $r(X)$ linearly guards $Z$ if and only if $P \Sigma_{X,\tilde{Z}} = 0$.
 \end{subquestion}
 
 \begin{subquestion}
