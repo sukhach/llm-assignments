@@ -1,12 +1,12 @@
 # Fdb version 4
-["makeindex main.idx"] 1777207769.91777 "main.idx" "main.ind" "main" 1777207773.73553 0
-  "main.idx" 1777207772.85458 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+["makeindex main.idx"] 1777207961.62559 "main.idx" "main.ind" "main" 1777207965.47616 0
+  "main.idx" 1777207964.58887 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   (generated)
   "main.ilg"
   "main.ind"
   (rewritten before read)
-["pdflatex"] 1777207771.96671 "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" "main.pdf" "main" 1777207773.73563 2
-  "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" 1777207769.71093 2013 caa72bb490ac15d5a091297f1386ea80 ""
+["pdflatex"] 1777207963.70091 "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" "main.pdf" "main" 1777207965.47626 2
+  "/Users/pfarkas/git-repos/llm-assignments/Assignment 1/main.tex" 1777207961.42098 2009 490ed1d57a23a3cbdeef65630a6f1225 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/inconsolata/i4-ot1-0.enc" 1561323594 2496 4d35740f3a177992ff7b134746c0a1db ""
   "/usr/local/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -401,10 +401,10 @@
   "custom_macros.tex" 1775905560 146 f00060a9bb4d1b7b2b34d06ea1538859 ""
   "ethlogo.pdf" 1775905560 12613 f33514e6c63ac6308c77de3777c74eb1 ""
   "macros.tex" 1775905560 64233 9779e449af41ce6f2a7498b5d4bab148 ""
-  "main.aux" 1777207773.56089 668 69c2b8c8632706d5299648769a56428f "pdflatex"
+  "main.aux" 1777207965.29805 668 69c2b8c8632706d5299648769a56428f "pdflatex"
   "main.ind" 0 -1 0 "makeindex main.idx"
-  "main.out" 1777207773.05598 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "main.tex" 1777207769.71093 2013 caa72bb490ac15d5a091297f1386ea80 ""
+  "main.out" 1777207964.79233 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "main.tex" 1777207961.42098 2009 490ed1d57a23a3cbdeef65630a6f1225 ""
   "notebook.pdf" 1777047378.35938 715705 60da59465a733b84e782872faa82c8e0 ""
   "preamble.tex" 1775913618.33669 10998 8faf64ccc2069ef865b36670e9d9b09c ""
   "problems/question1.tex" 1777204979.27054 13923 ac2fd729716496960e7895475b26a664 ""
