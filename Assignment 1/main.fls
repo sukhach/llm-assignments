@@ -683,14 +683,14 @@ INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/frcursive/t1frc.fd
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/frcursive/t1frc.fd
 INPUT /usr/local/texlive/2026/texmf-dist/tex/latex/frcursive/t1frc.fd
 INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/public/frcursive/frcr10.tfm
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm
 INPUT /usr/local/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map
+INPUT /usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT ./problems/question1.tex
 INPUT ./problems/question1.tex
 INPUT ./problems/question1.tex
 INPUT ./problems/question1.tex
 INPUT problems/question1.tex
-INPUT /usr/local/texlive/2026/texmf-dist/fonts/tfm/jknappen/ec/tcrm1200.tfm
-INPUT /usr/local/texlive/2026/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 INPUT ./notebook.pdf
 INPUT ./notebook.pdf
 INPUT ./notebook.pdf
