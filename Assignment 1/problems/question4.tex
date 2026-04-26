@@ -212,26 +212,26 @@ We prove Equations (55) and (56) using a single induction on the layer index $l$
 
 \textbf{Base Case ($l=0$):}
 
-At the input layer, strings $y$ and $y'$ differ only at position $t^*$. Thus, $\|x_{t^*}^{(0)} - x_{t^*}^{\prime(0)}\| = \mathcal{O}(1)$ and $\|x_t^{(0)} - x_t^{\prime(0)}\| = 0$ for $t \neq t^*$. This satisfies the initial condition for (56)[cite: 420, 422].
+At the input layer, strings $y$ and $y'$ differ only at position $t^*$. Thus, $\|x_{t^*}^{(0)} - x_{t^*}^{\prime(0)}\| = \mathcal{O}(1)$ and $\|x_t^{(0)} - x_t^{\prime(0)}\| = 0$ for $t \neq t^*$. This satisfies the initial condition for (56).
 
 \textbf{Inductive Step:}
 
 Assume Equation (56) holds for layer $l$. We use this to prove both claims for the next state.
 
 \textbf{Step 1: Proving (55) (Stability of the Attention Output)}
-Using the decomposition from 4e [cite: 455-456], we bound the attention output difference $\Delta_t^{(l)}$ as follows:
+Using the decomposition from 4e, we bound the attention output difference $\Delta_t^{(l)}$ as follows:
 \begin{equation}
 \Delta_t^{(l)} \le \underbrace{\sum_{t'=1}^{T} |s_{t,t'}^{(l)} - s_{t,t'}^{\prime(l)}| \|x_{t'}^{(l)}\|}_{\text{Term 1: Difficult Part}} + \underbrace{\sum_{t'=1}^{T} s_{t,t'}^{\prime(l)} \|x_{t'}^{(l)} - x_{t'}^{\prime(l)}\|}_{\text{Term 2: Residual Errors}}
 \end{equation}
 
 \begin{itemize}
-    \item \textbf{Term 1 (Application of 4h and 4i):} Sub-question \textbf{4h} establishes that individual attention weights change by $\mathcal{O}(1/T^2)$ [cite: 471-472]. Since representations $\|x_{t'}^{(l)}\|$ are bounded by a constant (from \textbf{4b} [cite: 427-431]), sub-question \textbf{4i} concludes the sum of these $T$ differences is $\mathcal{O}(1/T)$ [cite: 478-479].
-    \item \textbf{Term 2 (Application of 4d and Hypothesis):} We split the sum at $t'=t^*$. At the flipped bit, $s_{t,t^*}^{\prime(l)} \|x_{t^*}^{(l)} - x_{t^*}^{\prime(l)}\| = \mathcal{O}(1/T) \cdot \mathcal{O}(1) = \mathcal{O}(1/T)$ using the weight bound from \textbf{4d} [cite: 437-439] and the hypothesis. For $t' \neq t^*$, the hypothesis states $\|x_{t'} - x'_{t'}\| = \mathcal{O}(1/T)$, so the weighted sum is also $\mathcal{O}(1/T)$.
+    \item \textbf{Term 1 (Application of 4h and 4i):} Sub-question \textbf{4h} establishes that individual attention weights change by $\mathcal{O}(1/T^2)$. Since representations $\|x_{t'}^{(l)}\|$ are bounded by a constant (from \textbf{4b}), sub-question \textbf{4i} concludes the sum of these $T$ differences is $\mathcal{O}(1/T)$.
+    \item \textbf{Term 2 (Application of 4d and Hypothesis):} We split the sum at $t'=t^*$. At the flipped bit, $s_{t,t^*}^{\prime(l)} \|x_{t^*}^{(l)} - x_{t^*}^{\prime(l)}\| = \mathcal{O}(1/T) \cdot \mathcal{O}(1) = \mathcal{O}(1/T)$ using the weight bound from \textbf{4d} and the hypothesis. For $t' \neq t^*$, the hypothesis states $\|x_{t'} - x'_{t'}\| = \mathcal{O}(1/T)$, so the weighted sum is also $\mathcal{O}(1/T)$.
 \end{itemize}
-Summing these yields $\Delta_t^{(l)} = \mathcal{O}(1/T) + \mathcal{O}(1/T) = \mathcal{O}(1/T)$, proving Equation (55) [cite: 489-491].
+Summing these yields $\Delta_t^{(l)} = \mathcal{O}(1/T) + \mathcal{O}(1/T) = \mathcal{O}(1/T)$, proving Equation (55).
 
 \textbf{Step 2: Proving (56) for Layer $l+1$ (Stability of the Representation)}
-The next representation is $x_t^{(l+1)} = f(z_t^{(l)}, x_t^{(l)})$[cite: 392]. Applying the Lipschitz continuity of $f$[cite: 398, 412]:
+The next representation is $x_t^{(l+1)} = f(z_t^{(l)}, x_t^{(l)})$. Applying the Lipschitz continuity of $f$:
 \begin{equation}
 \|x_t^{(l+1)} - x_t^{\prime(l+1)}\| \le L_f \left( \Delta_t^{(l)} + \|x_t^{(l)} - x_t^{\prime(l)}\| \right)
 \end{equation}

@@ -108,78 +108,96 @@ $$\text{Cov}(PX, \tilde{Z}) = P \text{Cov}(X, \tilde{Z}) = P \Sigma_{X,\tilde{Z}
 Therefore, $r(X)$ linearly guards $Z$ if and only if $P \Sigma_{X,\tilde{Z}} = 0$.
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Optimal Representation Surgery}}
 
-\subsubsection*{Direction $(\implies):$ $r(\mathbf{X})$ linearly guards $Z \implies \mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$}
+\subsubsection*{(i) Decomposition of the MSE Loss}
+We aim to show that $\mathbb{E}[\|PX + b - X\|^2] = \mathbb{E}[\|(P-I)X\|^2] + \|b\|^2$.
 
-Assume that the representation $r(\mathbf{X}) = \mathbf{P}\mathbf{X} + \mathbf{b}$ linearly guards the concept $Z$. By definition of linear guarding, the cross-covariance between the transformed representation and the target concept must vanish:
-$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{0}$$
+First, we rewrite the loss by grouping the transformation terms separately from the constant bias:
+$$\mathbb{E}[\|(PX - X) + b\|^2]$$
 
-Substituting the expression for $r(\mathbf{X})$, we have:
-$$Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z}) = \mathbf{0}$$
+Expanding the squared norm within the expectation according to the hint:
+$$\mathbb{E}[\|PX - X\|^2 + \|b\|^2 + 2(PX - X)^\top b]$$
 
-We now apply the \textbf{linearity of covariance}. Since covariance is invariant to translations by a constant vector $\mathbf{b}$, and linear with respect to the matrix $\mathbf{P}$, we can simplify the expression as follows:
-$$Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z}) = Cov(\mathbf{P}\mathbf{X}, \tilde{Z}) = \mathbf{P} Cov(\mathbf{X}, \tilde{Z})$$
+Applying the linearity of expectation, we distribute the operator across the terms:
+$$\mathbb{E}[\|PX - X\|^2] + \mathbb{E}[\|b\|^2] + 2\mathbb{E}[(PX - X)^\top b]$$
 
-Substituting the definition of the original cross-covariance $\boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = Cov(\mathbf{X}, \tilde{Z})$, we arrive at:
-$$\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$$
+We now analyze the individual components:
+\begin{itemize}
+    \item \textbf{First Term:} By factoring out $X$, this term represents the transformation error: $\mathbb{E}[\|(P-I)X\|^2]$.
+    \item \textbf{Second Term:} Since $b$ is a constant vector, $\mathbb{E}[\|b\|^2] = \|b\|^2$.
+    \item \textbf{Third (Cross) Term:} We pull the constants out of the expectation:
+    $$2\mathbb{E}[PX - X]^\top b = 2(P\mathbb{E}[X] - \mathbb{E}[X])^\top b$$
+    By introducing the identity matrix $I$, we can write this as $2((P - I)\mathbb{E}[X])^\top b$. Under the assumption $\mathbb{E}[X] = 0$, this entire term becomes $0$, and the right part of the expansion falls away.
+\end{itemize}
 
-This result confirms that if $r(\mathbf{X})$ is guarded, the matrix $\mathbf{P}$ must map the columns of the covariance matrix to the zero vector.
+Substituting these results back into the original expansion, we obtain the desired decomposition:
+$$\mathbb{E}[\|PX + b - X\|^2] = \mathbb{E}[\|(P-I)X\|^2] + \|b\|^2$$
+\subsubsection*{(ii) Minimization of the Bias Term}
 
-\subsubsection*{Direction $(\impliedby):$ $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0} \implies r(\mathbf{X})$ linearly guards $Z$}
+To minimize the expected squared error with respect to $b$, we refer to the decomposition derived in 1g (i):
+$$\min_{b \in \mathbb{R}^d} \left( \mathbb{E}[\|(P-I)X\|^2] + \|b\|^2 \right)$$
 
-Now, we assume that the algebraic condition $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$ holds. We must show that this condition is sufficient to guarantee that the representation $r(\mathbf{X}) = \mathbf{P}\mathbf{X} + \mathbf{b}$ linearly guards $Z$.
+Since the first term $\mathbb{E}[\|(P-I)X\|^2]$ does not depend on $b$, the problem reduces to minimizing the second term:
+$$\min_{b \in \mathbb{R}^d} \|b\|^2$$
 
-We examine the cross-covariance of the transformed representation:
-$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = Cov(\mathbf{P}\mathbf{X} + \mathbf{b}, \tilde{Z})$$
+The squared norm $\|b\|^2 = \sum_{j=1}^d b_j^2$ is a convex function that is always non-negative ($\ge 0$). The absolute minimum is achieved when every component of the vector is zero. Therefore:
+$$b^* = 0$$
 
-Using the \textbf{linearity of covariance}, we apply translation invariance to the constant vector $\mathbf{b}$ and homogeneity to the matrix $\mathbf{P}$:
-$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{P} Cov(\mathbf{X}, \tilde{Z})$$
-
-Substituting the definition of the original cross-covariance matrix $\boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}}$:
-$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}}$$
-
-By our initial assumption, $\mathbf{P} \boldsymbol{\Sigma}_{\mathbf{X}, \tilde{Z}} = \mathbf{0}$. Therefore:
-$$\boldsymbol{\Sigma}_{r(\mathbf{X}), \tilde{Z}} = \mathbf{0}$$
-
-Since the cross-covariance between $r(\mathbf{X})$ and $\tilde{Z}$ is the zero matrix, it follows from the established equivalence between zero covariance and linear guarding that $r(\mathbf{X})$ linearly guards $Z$.
+Thus, for any chosen transformation matrix $P$, the optimal bias that minimizes the representation surgery loss is the zero vector.
 \end{subquestion}
 
-\begin{subquestion}
+\begin{subquestion}{\textbf{Optimal Projection for Concept Erasure}}
 
-\subsubsection*{(i)}
+We aim to show that $P^* = I - \Sigma_{X,\tilde{Z}}\Sigma_{X,\tilde{Z}}^{+}$ is the optimal transformation matrix. 
 
-\begin{align*}
-D(\mathbf{P}, \mathbf{b}) &= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X} + \mathbf{b}|^2] \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2 + |\mathbf{b}|^2 + 2(\mathbf{P}\mathbf{X} - \mathbf{X} | \mathbf{b})] \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2\mathbb{E}[(\mathbf{P}\mathbf{X} - \mathbf{X} | \mathbf{b})] \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2(\mathbb{E}[(\mathbf{P} - \mathbf{I})\mathbf{X}] | \mathbf{b}) \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2((\mathbf{P} - \mathbf{I})\mathbb{E}[\mathbf{X}] | \mathbf{b}) \\
-\text{Since } \mathbb{E}[\mathbf{X}] &= \mathbf{0}: \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2 + 2(\mathbf{0} | \mathbf{b}) \\
-&= \mathbb{E}[|\mathbf{P}\mathbf{X} - \mathbf{X}|^2] + |\mathbf{b}|^2
-\end{align*}
+\subsubsection*{Step 1: Satisfying the Guarding Condition}
+From 1f, a representation linearly guards $Z$ if and only if $P \Sigma_{X,\tilde{Z}} = 0$. Substituting $P^*$:
+$$P^* \Sigma_{X,\tilde{Z}} = (I - \Sigma_{X,\tilde{Z}}\Sigma_{X,\tilde{Z}}^{+}) \Sigma_{X,\tilde{Z}} = \Sigma_{X,\tilde{Z}} - \Sigma_{X,\tilde{Z}}\Sigma_{X,\tilde{Z}}^{+}\Sigma_{X,\tilde{Z}}$$
+By the properties of the Moore-Penrose pseudoinverse, $AA^+A = A$. Therefore:
+$$P^* \Sigma_{X,\tilde{Z}} = \Sigma_{X,\tilde{Z}} - \Sigma_{X,\tilde{Z}} = 0$$
+Thus, $P^*$ satisfies the linear guarding condition.
 
-\subsubsection*{(ii)}
+\subsubsection*{Step 2: Minimizing the Distortion}
+We now minimize the distortion $D(P) = \mathbb{E}[\|PX - X\|^2]$. Factoring out $X$, we get:
+$$D(P) = \mathbb{E}[\|(P-I)X\|^2]$$
+Using the trace identity provided in the hint, $\mathbb{E}[\|AX\|^2] = \text{tr}(A\Sigma_{X,X}A^\top)$, and the assumption $\Sigma_{X,X} = I$:
+$$D(P) = \text{tr}((P-I)I(P-I)^\top) = \text{tr}((P-I)(P-I)^\top) = \|P-I\|_F^2$$
+This shows that minimizing $D(P)$ is equivalent to finding a $P$ that satisfies $P \Sigma_{X,\tilde{Z}} = 0$ and is closest to the identity matrix $I$ in the Frobenius norm.
 
-Since $\mathbf{b}$ only adds to the distance the optional value is $\mathbf{0}$.
+\subsubsection*{Step 3: Application of the Projection Theorem}
+Let $V = \text{colsp}(\Sigma_{X,\tilde{Z}})$. The constraint $P \Sigma_{X,\tilde{Z}} = 0$ implies that the columns of $\Sigma_{X,\tilde{Z}}$ must lie in the null space of $P$. To minimize the disruption to $X$, $P$ should act as the identity on the orthogonal complement $V^\perp$ and as zero on $V$.
+By the Projection Theorem, the orthogonal projection onto $V^\perp$ is:
+$$\Pi_{V^\perp} = I - \Pi_V = I - \Sigma_{X,\tilde{Z}}\Sigma_{X,\tilde{Z}}^{+}$$
+Any vector $x$ can be decomposed into $x_V + x_{V^\perp}$. To satisfy the constraint, $P(x_V)$ must be $0$. To minimize $\|PX - X\|^2$, we want $P(x_{V^\perp})$ to be as close to $x_{V^\perp}$ as possible, which is achieved by $P(x_{V^\perp}) = x_{V^\perp}$. This characterizes $P$ exactly as the orthogonal projection $\Pi_{V^\perp}$. 
 
+Thus, $P^* = I - \Sigma_{X,\tilde{Z}}\Sigma_{X,\tilde{Z}}^{+}$ is the unique minimizer.
 \end{subquestion}
 
-\begin{subquestion}
-\subsubsection*{Proof that $\Pstar$ satisfies Eq. (7)}
-\begin{align*}
-           \Pstar &= \I - \SigXZ \SigXZ^{+} \\
-    \Pstar \SigXZ &= (\I - \SigXZ \SigXZ^{+}) \SigXZ \\
-                  &= \I \SigXZ - (\SigXZ \SigXZ^{+} \SigXZ) \\
-                  &= \SigXZ - \SigXZ \justification{$A A^+ A = A$} \\
-    \Pstar \SigXZ &= \mathbf{0}
-\end{align*}
-\subsubsection*{Proof that $\Pstar$ minimizes Eq. (8)}
-\end{subquestion}
+\begin{subquestion}{\textbf{General Linear Concept Erasure}}
 
-\begin{subquestion}
+We consider the case where $\mathbb{E}[X] \neq 0$ and $\Sigma_{X,X} \neq I$. To find the optimal affine map $r(x) = x - W^{+}\Pi_{W\Sigma_{X,\tilde{Z}}}W(x-\mathbb{E}[X])$, we utilize the whitening transformation.
 
+\subsubsection*{Step 1: Centering and Whitening}
+First, we center the data by subtracting the mean $\bar{x} = \mathbb{E}[X]$ and apply the whitening matrix $W = (\Sigma_{X,X}^{1/2})^{+}$. Let $X_{w} = W(X - \mathbb{E}[X])$ be the whitened representation. By construction, $\Sigma_{X_w, X_w} = I$ and $\mathbb{E}[X_w] = 0$. The cross-covariance in this whitened space is:
+$$\Sigma_{X_w, \tilde{Z}} = \text{Cov}(W(X - \mathbb{E}[X]), \tilde{Z}) = W\Sigma_{X,\tilde{Z}}$$
+
+\subsubsection*{Step 2: Optimal Surgery in Whitened Space}
+Applying the result from 1h, the optimal surgery in the whitened space is the orthogonal projection $P_w = I - \Pi_{W\Sigma_{X,\tilde{Z}}}$, where $\Pi_{W\Sigma_{X,\tilde{Z}}} = (W\Sigma_{X,\tilde{Z}})(W\Sigma_{X,\tilde{Z}})^{+}$. The cleaned whitened representation is:
+$$r_w(X_w) = (I - \Pi_{W\Sigma_{X,\tilde{Z}}})X_w = X_w - \Pi_{W\Sigma_{X,\tilde{Z}}}X_w$$
+
+\subsubsection*{Step 3: Un-whitening and Re-centering}
+To return to the original space, we apply the pseudo-inverse of the whitening matrix $W^{+} = \Sigma_{X,X}^{1/2}$ and add back the mean $\mathbb{E}[X]$:
+$$r(x) = W^{+} r_w(X_w) + \mathbb{E}[X]$$
+Substituting $X_w = W(x - \mathbb{E}[X])$:
+$$r(x) = W^{+} [W(x - \mathbb{E}[X]) - \Pi_{W\Sigma_{X,\tilde{Z}}}W(x - \mathbb{E}[X])] + \mathbb{E}[X]$$
+$$r(x) = W^{+}W(x - \mathbb{E}[X]) - W^{+}\Pi_{W\Sigma_{X,\tilde{Z}}}W(x - \mathbb{E}[X]) + \mathbb{E}[X]$$
+
+Since $W^{+}W$ acts as the identity on the column space of $\Sigma_{X,X}$ (the space where $x - \mathbb{E}[X]$ resides), we have $W^{+}W(x - \mathbb{E}[X]) = x - \mathbb{E}[X]$. Thus:
+$$r(x) = (x - \mathbb{E}[X]) - W^{+}\Pi_{W\Sigma_{X,\tilde{Z}}}W(x - \mathbb{E}[X]) + \mathbb{E}[X]$$
+$$r(x) = x - W^{+}\Pi_{W\Sigma_{X,\tilde{Z}}}W(x - \mathbb{E}[X])$$
+
+This affine map removes the component of $x$ that correlates with $Z$ in the whitened space and maps it back to the original geometry, minimizing the distortion $D(P,b)$.
 \end{subquestion}
 
 \end{question}
